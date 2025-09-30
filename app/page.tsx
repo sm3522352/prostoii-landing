@@ -629,7 +629,7 @@ export default function Page() {
       <Section id="testimonials" title="Отзывы" subtitle="До и после — коротко и по делу." spacing="tight" tone="muted">
         <div className="flex flex-col gap-4">
           <div className="text-sm font-semibold text-muted">★ 4,8 (за 30 дней)</div>
-          <div className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-4" role="region" aria-label="Истории пользователей">
+          <div className="-mx-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-4" role="region" aria-label="Истории пользователей">
             {testimonials.map((testimonial) => (
               <TestimonialCard key={testimonial.id} {...testimonial} />
             ))}
@@ -646,7 +646,6 @@ export default function Page() {
           </button>
         </div>
       </Section>
-
       <div className="section-divider my-8 md:my-10" />
 
       <Section id="faq" title="FAQ" subtitle="Ответы на самые частые вопросы." spacing="tight">
