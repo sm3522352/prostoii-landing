@@ -1,42 +1,70 @@
 "use client";
-import { useId, useRef, useState, useEffect } from "react";
-import Card from "./Card";
 
-export default function FAQItem({ q, a }: { q: string; a: string }) {
+import { useEffect, useId, useRef, useState } from "react";
+import Link from "next/link";
+import Card from "./Card";
+import { trackEvent } from "@/lib/analytics";
+
+export type FAQProps = {
+  id: string;
+  q: string;
+  a: string;
+  linkLabel?: string;
+  href?: string;
+};
+
+export default function FAQItem({ id, q, a, linkLabel, href }: FAQProps) {
   const [open, setOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [height, setHeight] = useState(0);
-  const id = useId();
+  const [maxHeight, setMaxHeight] = useState(0);
+  const contentId = useId();
 
   useEffect(() => {
     const el = contentRef.current;
     if (!el) return;
-    setHeight(open ? el.scrollHeight : 0);
+    setMaxHeight(open ? el.scrollHeight : 0);
   }, [open]);
 
+  useEffect(() => {
+    if (open) {
+      trackEvent("faq_opened", { question_id: id });
+    }
+  }, [open, id]);
+
+  const link = linkLabel && href ? (
+    <Link
+      href={href}
+      className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary underline-offset-4 hover:underline"
+    >
+      {linkLabel}
+      <span aria-hidden>→</span>
+    </Link>
+  ) : null;
+
   return (
-    <Card className="p-5">
+    <Card>
       <button
-        className="flex w-full items-center justify-between text-left text-base font-medium text-accent"
-        onClick={() => setOpen((v) => !v)}
+        type="button"
+        className="flex w-full items-center justify-between gap-4 text-left text-base font-semibold text-text"
         aria-expanded={open}
-        aria-controls={id}
-        data-analytics="faq_toggle"
+        aria-controls={contentId}
+        onClick={() => setOpen((value) => !value)}
       >
         <span>{q}</span>
-        <span aria-hidden className="ml-4 text-xl leading-none text-primary-500">
+        <span aria-hidden className="text-2xl leading-none text-primary">
           {open ? "−" : "+"}
         </span>
       </button>
       <div
-        id={id}
+        id={contentId}
         ref={contentRef}
-        style={{ maxHeight: height }}
+        style={{ maxHeight }}
         className="grid overflow-hidden transition-all duration-300 ease-out"
       >
-        <p className="mt-3 text-sm text-neutral-600 opacity-0 transition-opacity duration-300 ease-out data-[open='true']:opacity-100" data-open={open}>
-          {a}
-        </p>
+        <div className="mt-3 space-y-3 text-sm leading-relaxed text-muted">
+          <p>{a}</p>
+          {link}
+        </div>
       </div>
     </Card>
   );

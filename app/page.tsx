@@ -1,6 +1,8 @@
-'use client';
+"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
 import Section from "@/components/Section";
@@ -8,383 +10,718 @@ import RecipeCard from "@/components/RecipeCard";
 import TestimonialCard from "@/components/TestimonialCard";
 import FAQItem from "@/components/FAQItem";
 import ModelTable from "@/components/ModelTable";
-import Pill from "@/components/Pill";
-import { type Recipe, recipes, faqs, testimonials } from "@/lib/data";
+import {
+  type Recipe,
+  type RecipeCategory,
+  recipeTabs,
+  recipes,
+  howSteps,
+  privacyCards,
+  plans,
+  testimonials,
+  faqs
+} from "@/lib/data";
+import { getDeviceType, setUserProps, trackEvent, trackTimeToValue } from "@/lib/analytics";
+import { useDebouncedValue } from "@/lib/useDebouncedValue";
 
-const recipeFilters: Recipe["category"][] = ["Быт", "Учёба", "Работа"];
+const heroBadges = ["Рекомендовано учителями", "Рекомендовано менеджерами", "Рекомендовано родителями"];
+const chatChips = ["Сделай проще", "Объясни как ребёнку", "Списком", "Примеры", "Исправь ошибки"];
 
-const howSteps = [
-  { icon: "🎯", title: "Выберите задачу", description: "≤ 8 слов, без жаргона." },
-  { icon: "💬", title: "Скажите по‑человечески", description: "≤ 8 слов, без жаргона." },
-  { icon: "✨", title: "Получите готовый результат", description: "≤ 8 слов, без жаргона." }
-];
+function showToast(message: string) {
+  const el = document.getElementById("toast");
+  if (!el) return;
+  el.textContent = message;
+  el.classList.add("toast--visible");
+  window.clearTimeout((el as unknown as { timeout?: number }).timeout);
+  (el as unknown as { timeout?: number }).timeout = window.setTimeout(() => {
+    el.classList.remove("toast--visible");
+  }, 2400);
+}
 
-const privacyCards = [
-  { icon: "🔐", title: "Шифрование — по умолчанию", copy: "Все запросы идут по защищённым каналам." },
-  {
-    icon: "🧾",
-    title: "Храним минимум — вы решаете, что сохранять",
-    copy: "Настраивайте историю задач и автосброс в один клик."
-  },
-  { icon: "🛡️", title: "Все настройки — в один тап", copy: "Быстрые переключатели прямо в Telegram." }
-];
-
-const pricingPlans = [
-  {
-    name: "Фримиум",
-    price: "0₽",
-    benefit: "Для редких задач",
-    features: ["Обычный чат", "5 рецептов в неделю"],
-    popular: false
-  },
-  {
-    name: "Семья",
-    price: "299₽",
-    benefit: "Для семьи и учебы",
-    features: ["Все рецепты", "До 4 профилей", "Родительский контроль"],
-    popular: true
-  },
-  {
-    name: "Про",
-    price: "699₽",
-    benefit: "Для частых задач и длинных файлов",
-    features: ["Длинные голосовые", "Экспорт в PDF", "Приоритетная поддержка"],
-    popular: false
-  }
-];
+type OnboardingStage = 0 | 1 | 2 | 3;
 
 export default function Page() {
+  const [activeTab, setActiveTab] = useState<RecipeCategory>("Популярные");
   const [searchValue, setSearchValue] = useState("");
-  const [activeFilter, setActiveFilter] = useState<Recipe["category"] | null>(null);
-  const [loadingRecipes, setLoadingRecipes] = useState(true);
-  const testimonialsRef = useRef<HTMLDivElement>(null);
+  const debouncedSearch = useDebouncedValue(searchValue, 300);
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
+  const [onboardingStage, setOnboardingStage] = useState<OnboardingStage>(0);
+  const onboardingStartedAt = useRef<number | null>(null);
+  const onboardingTimers = useRef<number[]>([]);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [comparisonOpen, setComparisonOpen] = useState(false);
+  const [reviewsModalOpen, setReviewsModalOpen] = useState(false);
+  const [reviewsPage, setReviewsPage] = useState(1);
+  const [demoResultReady, setDemoResultReady] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+
+  const activePlan = plans.find((plan) => plan.id === selectedPlanId) ?? null;
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setLoadingRecipes(false), 420);
-    return () => window.clearTimeout(timer);
+    setUserProps({ plan: "free", is_new: true, locale: "ru", device: getDeviceType() });
   }, []);
 
   useEffect(() => {
-    const el = testimonialsRef.current;
-    if (!el) return;
-    let direction = 1;
-    const interval = window.setInterval(() => {
-      if (!el) return;
-      const maxScroll = el.scrollWidth - el.clientWidth;
-      if (el.scrollLeft >= maxScroll - 4) {
-        direction = -1;
-      } else if (el.scrollLeft <= 4) {
-        direction = 1;
-      }
-      el.scrollBy({ left: direction * (el.clientWidth - 40), behavior: "smooth" });
-    }, 4000);
-    return () => window.clearInterval(interval);
+    return () => {
+      onboardingTimers.current.forEach((timer) => window.clearTimeout(timer));
+    };
   }, []);
+
+  const normalizedSearch = debouncedSearch.trim().toLowerCase();
 
   const filteredRecipes = useMemo(() => {
-    let list = recipes;
-    if (activeFilter) {
-      list = list.filter((recipe) => recipe.category === activeFilter);
+    let data = recipes.filter((recipe) => recipe.categories.includes(activeTab));
+    if (normalizedSearch) {
+      data = recipes.filter((recipe) =>
+        recipe.title.toLowerCase().includes(normalizedSearch) ||
+        recipe.description.toLowerCase().includes(normalizedSearch)
+      );
     }
-    if (searchValue.trim()) {
-      const q = searchValue.trim().toLowerCase();
-      list = list.filter((recipe) => recipe.title.toLowerCase().includes(q));
-    }
-    return list;
-  }, [activeFilter, searchValue]);
+    return data;
+  }, [activeTab, normalizedSearch]);
 
-  const recipeCards = loadingRecipes
-    ? Array.from({ length: 6 }).map((_, idx) => <RecipeCard key={`skeleton-${idx}`} title="" benefit="" loading />)
-    : filteredRecipes.map((recipe) => (
-        <RecipeCard
-          key={recipe.title}
-          title={recipe.title}
-          benefit={recipe.benefit}
-          icon={recipe.icon}
-        />
-      ));
+  useEffect(() => {
+    if (normalizedSearch) {
+      trackEvent("search_used", {
+        query_len: normalizedSearch.length,
+        results_count: filteredRecipes.length
+      });
+    }
+  }, [normalizedSearch, filteredRecipes.length]);
+
+  const suggestions = useMemo(() => {
+    const pool = normalizedSearch
+      ? recipes.filter((recipe) =>
+          recipe.title.toLowerCase().includes(normalizedSearch) ||
+          recipe.description.toLowerCase().includes(normalizedSearch)
+        )
+      : recipes.filter((recipe) => recipe.categories.includes("Для новичка"));
+    return Array.from(new Set(pool.map((recipe) => recipe.title))).slice(0, 5);
+  }, [normalizedSearch]);
+
+  const featuredRecipes = filteredRecipes.slice(0, 4);
+  const remainingRecipes = filteredRecipes.slice(4);
+
+  const fullReviews = useMemo(() => {
+    const total = 112;
+    return Array.from({ length: total }, (_, index) => {
+      const base = testimonials[index % testimonials.length];
+      return {
+        ...base,
+        id: `${base.id}-${index + 1}`
+      };
+    });
+  }, []);
+
+  const reviewsPerPage = 12;
+  const totalReviewPages = Math.ceil(fullReviews.length / reviewsPerPage);
+  const paginatedReviews = fullReviews.slice((reviewsPage - 1) * reviewsPerPage, reviewsPage * reviewsPerPage);
+
+  const startOnboarding = () => {
+    onboardingTimers.current.forEach((timer) => window.clearTimeout(timer));
+    onboardingTimers.current = [];
+    onboardingStartedAt.current = performance.now();
+    setOnboardingStage(0);
+    setDemoResultReady(false);
+    setOnboardingOpen(true);
+    trackEvent("onboarding_started", { source: "how_it_works" });
+
+    onboardingTimers.current.push(
+      window.setTimeout(() => setOnboardingStage(1), 500),
+      window.setTimeout(() => setOnboardingStage(2), 1200),
+      window.setTimeout(() => {
+        setOnboardingStage(3);
+        setDemoResultReady(true);
+        trackTimeToValue(onboardingStartedAt, "first_result_generated", { recipe_id: "demo_recipe" });
+        showToast("Готово. Сохраните, поделитесь или запустите следующий рецепт.");
+      }, 2000)
+    );
+  };
+
+  const closeOnboarding = () => {
+    setOnboardingOpen(false);
+    onboardingTimers.current.forEach((timer) => window.clearTimeout(timer));
+    onboardingTimers.current = [];
+    onboardingStartedAt.current = null;
+    setDemoResultReady(false);
+  };
+
+  const handleHeroCTA = () => {
+    trackEvent("hero_cta_clicked", { variant: "primary", device: getDeviceType() });
+    startOnboarding();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleExamplesClick = () => {
+    trackEvent("examples_clicked", { device: getDeviceType() });
+    document.getElementById("recipes")?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleLaunchRecipe = (recipe: Recipe, tab: RecipeCategory | "Все") => {
+    showToast("Готово. Сохраните, поделитесь или запустите следующий рецепт.");
+    trackEvent("recipe_card_clicked", { recipe_id: recipe.id, tab, device: getDeviceType() });
+  };
+
+  const handleCopyResult = (recipeId: string) => {
+    trackEvent("result_copied", { recipe_id: recipeId });
+    showToast("Скопировано. Можно поделиться с коллегами или близкими.");
+  };
+
+  const handleSaveResult = (recipeId: string) => {
+    trackEvent("result_saved", { recipe_id: recipeId });
+    showToast("Сохранено в избранное. Найдёте в истории.");
+  };
+
+  const openPlanModal = (planId: string) => {
+    setSelectedPlanId(planId);
+    trackEvent("paywall_viewed", { position: "pricing", variant: "default" });
+  };
+
+  const handleSelectPlan = (planId: string, price: string, method: string) => {
+    const priceValue = Number(price.replace(/[^0-9]/g, ""));
+    trackEvent("plan_selected", { plan: planId, price_rub: priceValue });
+    showToast(`Вы выбрали оплату через ${method}.`);
+    setSelectedPlanId(null);
+  };
+
+  const handlePresetResume = () => {
+    const resumeRecipe = recipes.find((recipe) => recipe.id === "role-tailored-resume");
+    if (!resumeRecipe) return;
+    setActiveTab("Работа");
+    setSearchValue("резюме");
+    document.getElementById("recipes")?.scrollIntoView({ behavior: "smooth" });
+    handleLaunchRecipe(resumeRecipe, "Работа");
+  };
+
+  const handleReviewSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    trackEvent("review_submitted", { rating: reviewRating });
+    showToast("Спасибо! Отзыв отправлен.");
+    setReviewsModalOpen(false);
+  };
 
   return (
     <main className="pb-24 md:pb-0">
-      {/* HERO */}
-      <section className="relative overflow-hidden pb-16 pt-20 lg:pt-28">
+      <section id="hero" className="relative overflow-hidden pb-16 pt-24 lg:pt-28">
         <div className="absolute inset-x-0 top-0 -z-10 flex justify-center">
-          <div className="bg-warm-glow glow-veil h-[420px] w-[720px] rounded-full" aria-hidden />
+          <div className="hero-glow h-[420px] w-[720px] rounded-full" aria-hidden />
         </div>
         <div className="container-soft grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]">
-          <div>
-            <div className="inline-flex items-center gap-2 text-xs">
-              <Pill>Личный ИИ‑помощник</Pill>
+          <div className="space-y-6">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-primary">
+              Понятный помощник
+            </span>
+            <div>
+              <h1 className="text-[44px] font-semibold leading-[1.15] text-text" style={{ fontFamily: "var(--font-jost)" }}>
+                Понятный ИИ. Готовый результат за 60 секунд.
+              </h1>
+              <p className="mt-4 text-lg leading-relaxed text-muted">
+                Опишите задачу своими словами — мы подберём рецепт и сделаем за вас. Никаких сложных настроек.
+              </p>
             </div>
-            <h1
-              className="mt-6 text-4xl font-semibold leading-[1.1] tracking-tight text-accent sm:text-5xl"
-              style={{ fontFamily: "var(--font-jost)" }}
-            >
-              Один сервис. Все модели. Ноль сложности.
-            </h1>
-            <p className="mt-3 text-sm font-medium text-neutral-500">
-              Уже 1 245 задач решено сегодня
-            </p>
-            <p className="mt-5 max-w-xl text-base text-neutral-600">
-              Скажите по-человечески — мы сделаем: обычный чат и готовые рецепты для реальных задач.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Button
-                as="a"
-                href="tg://resolve?domain=your_mini_app"
-                aria-label="Начать бесплатно в Telegram"
-                data-analytics="click_cta_primary"
-              >
-                Начать бесплатно в Telegram
+            <div className="flex flex-wrap gap-3">
+              <Button onClick={handleHeroCTA} aria-label="Начать бесплатно" size="lg">
+                Начать бесплатно
               </Button>
-              <Button
-                as="a"
-                variant="ghost"
-                href="#demo"
-                aria-label="Смотреть демо"
-                data-analytics="click_cta_secondary"
-              >
-                Смотреть демо
+              <Button variant="link" onClick={handleExamplesClick} aria-label="Посмотреть примеры">
+                Посмотреть примеры
               </Button>
             </div>
-            <p className="mt-3 text-xs font-medium text-neutral-500">
-              Без регистрации и карты • 10 действий бесплатно
+            <p className="text-sm text-muted">Без карты • 20 запросов в день • Можно отменить в 1 клик</p>
+            <p className="text-sm font-semibold text-text">
+              12 487 человек за последние 30 дней • Средняя оценка 4,8/5
             </p>
+            <div className="flex flex-wrap gap-2">
+              {heroBadges.map((badge) => (
+                <span key={badge} className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-2 text-xs font-semibold text-muted">
+                  <span aria-hidden>✔</span>
+                  {badge}
+                </span>
+              ))}
+            </div>
           </div>
-          <div className="relative">
-            <Card className="relative overflow-hidden rounded-[24px] border border-white/40 p-6 shadow-soft">
-              <div className="absolute inset-0 -z-10 rounded-[24px] bg-warm-glow" aria-hidden />
-              <div className="absolute inset-x-4 top-4 -z-10 h-40 rounded-[24px] bg-white/60 blur-2xl" aria-hidden />
-              <Pill className="bg-white/90 text-accent">Голос • Фото • Текст</Pill>
-              <div className="mt-6 space-y-3">
-                <div className="max-w-[240px] rounded-[16px] bg-white/90 p-4 text-sm text-neutral-700 shadow-soft">
-                  👤 Как объяснить договор аренды?
-                </div>
-                <div className="ml-auto max-w-[260px] rounded-[16px] bg-primary-500/10 p-4 text-sm text-primary-700 shadow-soft">
-                  🤖 Всё по пунктам: права, обязанности и что проверить перед подписью.
-                </div>
+          <Card className="relative overflow-hidden border border-white/60 bg-white/90 p-0 shadow-[0_32px_80px_-44px_rgba(15,18,34,0.6)]">
+            <div className="space-y-5 p-6">
+              <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+                <span>Рецепт</span>
+                <span className="text-success">Готово на 100%</span>
               </div>
-              <div className="mt-6">
-                <div className="flex items-center justify-between text-xs font-medium text-neutral-500">
-                  <span>Понятность</span>
-                  <span className="text-primary-600">92% понятно</span>
-                </div>
-                <div
-                  className="mt-2 h-2 w-full overflow-hidden rounded-full bg-white/60"
-                  role="progressbar"
-                  aria-label="Понятность ответа"
-                  aria-valuenow={92}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
+              <div>
+                <h3 className="text-lg font-semibold text-text">Поясни договор аренды простыми словами</h3>
+                <p className="mt-2 text-sm text-muted">На это ушло 42 секунды</p>
+              </div>
+              <ol className="space-y-3 text-sm text-text">
+                <li className="flex items-start gap-3">
+                  <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary-50 text-xs font-semibold text-primary">
+                    1
+                  </span>
+                  Читаем текст
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary-50 text-xs font-semibold text-primary">
+                    2
+                  </span>
+                  Выделяем важное
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary-50 text-xs font-semibold text-primary">
+                    3
+                  </span>
+                  Объясняем по пунктам
+                </li>
+              </ol>
+              <div className="rounded-[16px] bg-neutral-50 p-4 text-sm leading-relaxed text-text">
+                <p className="font-semibold text-primary">Что важно проверить:</p>
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-muted">
+                  <li>Срок аренды и условия продления.</li>
+                  <li>Размер депозита и сроки возврата.</li>
+                  <li>Ответственность сторон за ремонт и коммунальные платежи.</li>
+                </ul>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  variant="secondary"
+                  onClick={() => handleCopyResult("preview_contract")}
+                  aria-label="Скопировать результат"
                 >
-                  <div className="h-full w-[92%] rounded-full bg-primary-500" />
-                </div>
-                <p className="mt-3 text-xs uppercase tracking-wide text-neutral-500">пример результата</p>
+                  Скопировать
+                </Button>
+                <Button variant="ghost" onClick={() => handleSaveResult("preview_contract")} aria-label="Сохранить результат">
+                  Сохранить
+                </Button>
               </div>
-            </Card>
-          </div>
+            </div>
+          </Card>
         </div>
       </section>
 
-      <Section id="how" title="Как это работает" subtitle="Три шага — и готово.">
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 md:gap-6">
+      <Section
+        id="how"
+        title="Как это работает"
+        subtitle="Три понятных шага — и всё готово."
+      >
+        <div className="grid gap-6 md:grid-cols-3">
           {howSteps.map((step) => (
-            <Card key={step.title} className="flex h-full flex-col gap-4 p-6">
-              <span aria-hidden className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary-50 text-lg">
-                {step.icon}
-              </span>
-              <div>
-                <div className="text-lg font-semibold text-accent">{step.title}</div>
-                <p className="mt-2 text-sm text-neutral-600">{step.description}</p>
+            <Card key={step.id} className="flex flex-col gap-4 p-0">
+              <Image
+                src={step.image}
+                alt={step.title}
+                width={360}
+                height={220}
+                className="h-48 w-full rounded-t-[20px] object-cover"
+              />
+              <div className="space-y-2 p-6">
+                <h3 className="text-lg font-semibold text-text">{step.title}</h3>
+                <p className="text-sm text-muted">{step.placeholder}</p>
+                <p className="text-sm text-muted">{step.helper}</p>
               </div>
             </Card>
           ))}
         </div>
+        <div className="mt-6">
+          <Button variant="secondary" onClick={startOnboarding} aria-label="Попробовать на примере">
+            Попробовать на примере →
+          </Button>
+        </div>
       </Section>
 
-      <Section id="recipes" title="Готовые рецепты" subtitle="Нажмите и запустите — остальное сделаем мы.">
+      <Section id="recipes" title="Готовые рецепты" subtitle="Начните с простого — так быстрее получается.">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <label htmlFor="recipe-search" className="sr-only">
-            Поиск рецепта
-          </label>
-          <div className="relative w-full max-w-xl">
-            <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-neutral-400" aria-hidden>
-              🔍
-            </span>
-            <input
-              id="recipe-search"
-              value={searchValue}
-              onChange={(event) => setSearchValue(event.target.value)}
-              placeholder="Найдите рецепт под вашу задачу"
-              className="w-full rounded-[16px] border border-neutral-200 bg-white/90 py-3 pl-12 pr-4 text-sm text-neutral-700 shadow-soft focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-200"
-              type="search"
-            />
+          <div className="w-full max-w-xl">
+            <label htmlFor="recipe-search" className="sr-only">
+              Напишите, что нужно сделать — мы предложим рецепт
+            </label>
+            <div className="relative">
+              <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-muted" aria-hidden>
+                🔍
+              </span>
+              <input
+                id="recipe-search"
+                value={searchValue}
+                onChange={(event) => setSearchValue(event.target.value)}
+                placeholder="Напишите, что нужно сделать — мы предложим рецепт"
+                className="w-full rounded-[20px] border border-neutral-200 bg-white py-3 pl-11 pr-4 text-sm text-text shadow-sm focus:border-primary focus:outline-none"
+                type="search"
+              />
+            </div>
+            {suggestions.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted" aria-live="polite">
+                Подсказки:
+                {suggestions.map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    type="button"
+                    className="rounded-full border border-neutral-200 px-3 py-1 text-xs font-semibold text-muted transition hover:border-primary hover:text-primary"
+                    onClick={() => setSearchValue(suggestion)}
+                    aria-label={`Использовать подсказку ${suggestion}`}
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          <div className="flex flex-wrap gap-2">
-            {recipeFilters.map((filter) => {
-              const isActive = activeFilter === filter;
-              return (
-                <button
-                  key={filter}
-                  type="button"
-                  onClick={() => setActiveFilter(isActive ? null : filter)}
-                  className={`flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium transition ${
-                    isActive
-                      ? "border-primary-300 bg-primary-50 text-primary-600"
-                      : "border-neutral-200 bg-white text-neutral-500 hover:border-neutral-300"
-                  }`}
-                  aria-pressed={isActive}
-                >
-                  {filter}
-                </button>
-              );
-            })}
+          <div className="flex flex-wrap gap-2" role="tablist" aria-label="Категории рецептов">
+            {recipeTabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={activeTab === tab.id}
+                className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                  activeTab === tab.id ? "border-primary bg-primary-50 text-primary" : "border-neutral-200 bg-white text-muted hover:border-primary"
+                }`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {recipeCards}
-        </div>
-        <div className="mt-6 flex justify-center">
-          <a
-            href="#recipes"
-            className="text-sm font-semibold text-primary-600 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2"
-            data-analytics="click_show_more"
-          >
-            Показать ещё
-          </a>
+        <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {featuredRecipes.map((recipe) => (
+            <div key={recipe.id} className="md:col-span-2 xl:col-span-1">
+              <RecipeCard recipe={recipe} tab={activeTab} onLaunch={handleLaunchRecipe} variant="featured" />
+            </div>
+          ))}
+          {remainingRecipes.map((recipe) => (
+            <RecipeCard key={recipe.id} recipe={recipe} tab={activeTab} onLaunch={handleLaunchRecipe} />
+          ))}
+          {filteredRecipes.length === 0 && (
+            <Card className="col-span-full bg-white text-center">
+              <p className="text-base font-semibold text-text">С чего начнём?</p>
+              <p className="mt-2 text-sm text-muted">
+                Выберите рецепт или опишите задачу простыми словами.
+              </p>
+            </Card>
+          )}
         </div>
       </Section>
 
-      <Section id="demo" title="Обычный чат" subtitle="Говорите голосом или пишите текстом.">
-        <Card className="flex flex-col gap-4 rounded-[24px] p-6">
-          <label htmlFor="chat-demo-input" className="sr-only">
-            Поле ввода задачи
-          </label>
-          <div className="flex items-center gap-3 rounded-[24px] border border-neutral-200 bg-white/90 px-4 py-5 shadow-soft">
+      <Section id="chat" title="Обычный чат" subtitle="Можно говорить голосом или писать текстом.">
+        <Card className="space-y-5">
+          <div className="flex items-center gap-3 rounded-[20px] border border-neutral-200 bg-white px-4 py-5">
             <button
               type="button"
-              className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary-500 text-white shadow-soft transition hover:bg-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
+              className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white"
               aria-label="Включить голосовой ввод"
             >
               🎙️
             </button>
             <input
-              id="chat-demo-input"
               type="text"
-              placeholder="Нажмите голосовую кнопку и начинайте говорить…"
-              className="w-full border-none bg-transparent text-base text-neutral-600 placeholder:text-neutral-400 focus:outline-none"
+              placeholder="Нажмите кнопку и скажите, что нужно…"
+              className="w-full border-none bg-transparent text-base text-text placeholder:text-muted focus:outline-none"
             />
           </div>
-          <p className="text-sm text-neutral-500">Можно прикрепить фото или надиктовать задачу</p>
+          <div className="flex flex-wrap gap-2">
+            {chatChips.map((chip) => (
+              <button
+                key={chip}
+                type="button"
+                className="rounded-full border border-neutral-200 px-3 py-1 text-sm text-muted transition hover:border-primary hover:text-primary"
+                onClick={() => showToast(`Добавили подсказку: ${chip}`)}
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
+          <Button variant="secondary" onClick={handlePresetResume} aria-label="Сделать из текста резюме">
+            Сделать из текста резюме →
+          </Button>
         </Card>
       </Section>
 
-      <Section id="models" title="Понятные модели — без жаргона" subtitle="Выбираете по задаче, а не по аббревиатурам.">
+      <Section
+        id="models"
+        title="Понятные модели — без жаргона"
+        subtitle="Если не хотите выбирать — мы сделаем это за вас."
+      >
         <ModelTable />
       </Section>
 
-      <Section id="privacy" title="Приватность" subtitle="Коротко и по делу.">
+      <Section id="privacy" title="Приватность" subtitle="Вы решаете, что хранить.">
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-muted">
+          <span aria-hidden>🛡️</span>
+          Надёжные провайдеры в ЕС • Совместимо с требованиями РФ
+        </div>
         <div className="grid gap-4 md:grid-cols-3">
           {privacyCards.map((card) => (
-            <Card key={card.title} className="flex h-full flex-col gap-4 p-6 text-neutral-600">
-              <span aria-hidden className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary-50 text-lg">
-                {card.icon}
-              </span>
+            <Card key={card.title} className="flex h-full flex-col justify-between">
               <div>
-                <div className="text-lg font-semibold text-accent">{card.title}</div>
-                <p className="mt-2 text-sm text-neutral-600">{card.copy}</p>
+                <h3 className="text-lg font-semibold text-text">{card.title}</h3>
+                <p className="mt-3 text-sm text-muted">{card.description}</p>
               </div>
+              <Link
+                href={card.href}
+                className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-primary underline-offset-4 hover:underline"
+              >
+                {card.cta}
+                <span aria-hidden>→</span>
+              </Link>
             </Card>
           ))}
         </div>
       </Section>
 
-      <Section id="pricing" title="Тарифы" subtitle="Оплата в Telegram Stars и СБП/ЮKassa">
+      <Section
+        id="pricing"
+        title="Тарифы"
+        subtitle="Оплата картой, СБП и МИР. Отмена — в один клик."
+      >
         <div className="grid gap-4 md:grid-cols-3">
-          {pricingPlans.map((plan) => (
+          {plans.map((plan) => (
             <Card
-              key={plan.name}
-              className={`flex h-full flex-col border transition ${
-                plan.popular ? "border-primary-200 bg-primary-50/60" : "border-transparent"
-              }`}
+              key={plan.id}
+              className={`flex h-full flex-col ${plan.highlight ? "border-primary-300 bg-primary-50" : "bg-white"}`}
             >
-              <div className="flex flex-col gap-3 p-6">
+              <div className="space-y-3 p-6">
                 <div className="flex items-center justify-between">
-                  <span className="text-xl font-semibold text-accent">{plan.name}</span>
-                  {plan.popular && (
-                    <span className="rounded-full bg-primary-500 px-3 py-1 text-xs font-semibold text-white">
-                      Популярный
-                    </span>
+                  <span className="text-xl font-semibold text-text">{plan.name}</span>
+                  {plan.highlight && (
+                    <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-white">Рекомендуем</span>
                   )}
                 </div>
-                <div className="text-3xl font-semibold text-accent" style={{ fontFamily: "var(--font-jost)" }}>
+                <div className="text-3xl font-semibold text-text" style={{ fontFamily: "var(--font-jost)" }}>
                   {plan.price}
-                  <span className="ml-1 align-baseline text-sm font-medium text-neutral-500">/мес</span>
+                  <span className="ml-1 text-sm font-medium text-muted">{plan.period}</span>
                 </div>
-                <p className="text-sm font-medium text-primary-600">{plan.benefit}</p>
-                <ul className="mt-2 space-y-2 text-sm text-neutral-600">
-                  {plan.features.map((feature) => (
-                    <li key={feature}>• {feature}</li>
+                <ul className="space-y-2 text-sm text-muted">
+                  {plan.bullets.map((bullet) => (
+                    <li key={bullet}>• {bullet}</li>
                   ))}
                 </ul>
               </div>
-              <div className="mt-auto px-6 pb-6">
-                <Button
-                  className="w-full"
-                  data-analytics="click_pricing"
-                  aria-label={`Выбрать тариф ${plan.name}`}
-                >
+              <div className="mt-auto space-y-2 p-6 pt-0">
+                <Button className="w-full" onClick={() => openPlanModal(plan.id)} aria-label={`Выбрать тариф ${plan.name}`}>
                   Выбрать
                 </Button>
+                <p className="text-center text-xs text-muted">{plan.footnote}</p>
               </div>
             </Card>
           ))}
         </div>
+        <p className="mt-4 text-xs text-muted">*Защита от злоупотреблений: без капч/скрапинга и т.п.</p>
+        <button
+          type="button"
+          className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary underline-offset-4 hover:underline"
+          onClick={() => setComparisonOpen((prev) => !prev)}
+        >
+          Сравнение — {comparisonOpen ? "скрыть" : "показать"}
+        </button>
+        {comparisonOpen && (
+          <Card className="mt-4 space-y-2 text-sm text-muted">
+            <p>Free — чтобы познакомиться и протестировать рецепты.</p>
+            <p>Семья — общий доступ, папки и избранное для домашних и учебных задач.</p>
+            <p>Про — «разумный безлимит», загрузка файлов и приватные рецепты для работы.</p>
+          </Card>
+        )}
       </Section>
 
-      <Section id="testimonials" title="Отзывы" subtitle="До/после — реальные истории.">
-        <div className="flex flex-col gap-3">
-          <div className="text-sm font-medium text-neutral-500">★ 4,8 (на основе 312 отзывов)</div>
-          <div
-            ref={testimonialsRef}
-            className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-4"
-            role="region"
-            aria-label="Истории пользователей"
-          >
-            {testimonials.map((t, i) => (
-              <TestimonialCard key={`${t.author}-${i}`} before={t.before} after={t.after} author={t.author} />
+      <Section id="testimonials" title="Отзывы" subtitle="До и после — коротко и по делу.">
+        <div className="flex flex-col gap-4">
+          <div className="text-sm font-semibold text-muted">★ 4,8 (за 30 дней)</div>
+          <div className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-4" role="region" aria-label="Истории пользователей">
+            {testimonials.map((testimonial) => (
+              <TestimonialCard key={testimonial.id} {...testimonial} />
             ))}
           </div>
+          <button
+            type="button"
+            className="self-start text-sm font-semibold text-primary underline-offset-4 hover:underline"
+            onClick={() => {
+              setReviewsModalOpen(true);
+              setReviewsPage(1);
+            }}
+          >
+            Смотреть все 112 отзывов →
+          </button>
         </div>
       </Section>
 
-      <Section id="faq" title="Вопросы и ответы">
+      <Section id="faq" title="FAQ" subtitle="Ответы на самые частые вопросы.">
         <div className="grid gap-4 md:grid-cols-2">
-          {faqs.map((f, i) => (
-            <FAQItem key={`${f.q}-${i}`} q={f.q} a={f.a} />
+          {faqs.map((faq) => (
+            <FAQItem key={faq.id} {...faq} />
           ))}
         </div>
       </Section>
 
       <footer className="border-t border-neutral-200 bg-white py-12">
-        <div className="container-soft flex flex-col gap-3 text-sm text-neutral-600 md:flex-row md:items-center md:justify-between">
+        <div className="container-soft flex flex-col gap-4 text-sm text-muted md:flex-row md:items-center md:justify-between">
           <div>
-            © {new Date().getFullYear()} ПростоИИ —
-            <span className="ml-1">Политика • Соглашение • Контакты</span>
-          </div>
-          <nav className="flex flex-wrap gap-4">
-            <a href="#" aria-label="Политика конфиденциальности" className="hover:underline">
+            © {new Date().getFullYear()} ПростоИИ
+            <span className="ml-2">•</span>
+            <Link href="/privacy" className="ml-2 underline-offset-4 hover:underline">
               Политика
-            </a>
-            <a href="#" aria-label="Пользовательское соглашение" className="hover:underline">
-              Соглашение
-            </a>
-            <a href="#" aria-label="Контакты" className="hover:underline">
-              Контакты
-            </a>
-          </nav>
+            </Link>
+            <Link href="/data-storage" className="ml-3 underline-offset-4 hover:underline">
+              Хранение данных
+            </Link>
+            <Link href="/settings/privacy" className="ml-3 underline-offset-4 hover:underline">
+              Настройки
+            </Link>
+          </div>
+          <div className="flex flex-wrap gap-4">
+            <Link href="mailto:team@prostoii.ru" className="underline-offset-4 hover:underline">
+              team@prostoii.ru
+            </Link>
+            <Link href="https://t.me/prostoii_support" className="underline-offset-4 hover:underline">
+              Поддержка в Telegram
+            </Link>
+          </div>
         </div>
       </footer>
+
+      {onboardingOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,18,34,0.55)] px-4"
+        >
+          <Card className="w-full max-w-lg bg-white">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold text-text">Первый результат</h3>
+              <button type="button" aria-label="Закрыть" onClick={closeOnboarding} className="text-muted">
+                ✕
+              </button>
+            </div>
+            <div className="mt-4 space-y-4">
+              <p className="text-sm text-muted">Шаг {onboardingStage + 1} из 3</p>
+              <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-100">
+                <div className="h-full rounded-full bg-primary" style={{ width: `${((onboardingStage + 1) / 3) * 100}%` }} />
+              </div>
+              <div className="rounded-[16px] bg-neutral-50 p-4 text-sm text-text">
+                {onboardingStage === 0 && "Загружаем пример задачи и подбираем рецепт."}
+                {onboardingStage === 1 && "Подстраиваем тон — чтобы звучало спокойно и без конфликтов."}
+                {onboardingStage === 2 && "Проверяем факты и форматируем текст."}
+                {onboardingStage === 3 && (
+                  <div className="space-y-3">
+                    <p className="text-lg font-semibold text-text">Готово!</p>
+                    <p className="text-sm text-muted">
+                      Получился пост для ЖКХ: спокойный тон, чёткие шаги и приглашение к диалогу.
+                    </p>
+                    <div className="rounded-[12px] bg-white p-3 text-sm text-text">
+                      Уважаемые соседи! С 12 мая проводим профилактику лифтов. Просим планировать время заранее, чтобы избежать очередей. Если нужна помощь — напишите диспетчеру в чат дома.
+                    </div>
+                  </div>
+                )}
+              </div>
+              {demoResultReady && (
+                <div className="flex flex-wrap gap-3">
+                  <Button variant="secondary" onClick={() => handleCopyResult("demo_recipe")}>
+                    Скопировать
+                  </Button>
+                  <Button variant="ghost" onClick={() => handleSaveResult("demo_recipe")}>
+                    Сохранить
+                  </Button>
+                  <Button onClick={closeOnboarding}>Создать ещё</Button>
+                </div>
+              )}
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {activePlan && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,18,34,0.55)] px-4"
+        >
+          <Card className="w-full max-w-md bg-white">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold text-text">Оплата тарифа «{activePlan.name}»</h3>
+              <button type="button" aria-label="Закрыть" onClick={() => setSelectedPlanId(null)} className="text-muted">
+                ✕
+              </button>
+            </div>
+            <p className="mt-2 text-sm text-muted">Выберите удобный способ оплаты.</p>
+            <div className="mt-4 space-y-3">
+              {["Карта", "СБП", "МИР"].map((method) => (
+                <Button
+                  key={method}
+                  className="w-full"
+                  onClick={() => handleSelectPlan(activePlan.id, activePlan.price, method)}
+                  aria-label={`Оплатить тариф ${activePlan.name} через ${method}`}
+                >
+                  {method}
+                </Button>
+              ))}
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {reviewsModalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,18,34,0.55)] px-4"
+        >
+          <Card className="w-full max-w-4xl bg-white">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold text-text">Отзывы пользователей</h3>
+              <button type="button" aria-label="Закрыть" onClick={() => setReviewsModalOpen(false)} className="text-muted">
+                ✕
+              </button>
+            </div>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              {paginatedReviews.map((review) => (
+                <Card key={review.id} className="bg-neutral-50">
+                  <p className="text-sm font-semibold text-text">{review.name}</p>
+                  <p className="text-xs text-muted">{review.role}</p>
+                  <p className="mt-3 text-sm text-muted">{review.before}</p>
+                  <p className="mt-2 text-sm font-medium text-text">{review.after}</p>
+                </Card>
+              ))}
+            </div>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="rounded-full border border-neutral-200 px-3 py-1 text-sm text-muted hover:border-primary hover:text-primary"
+                  onClick={() => setReviewsPage((page) => Math.max(1, page - 1))}
+                  disabled={reviewsPage === 1}
+                >
+                  ← Назад
+                </button>
+                <span className="text-sm text-muted">
+                  Страница {reviewsPage} из {totalReviewPages}
+                </span>
+                <button
+                  type="button"
+                  className="rounded-full border border-neutral-200 px-3 py-1 text-sm text-muted hover:border-primary hover:text-primary"
+                  onClick={() => setReviewsPage((page) => Math.min(totalReviewPages, page + 1))}
+                  disabled={reviewsPage === totalReviewPages}
+                >
+                  Вперёд →
+                </button>
+              </div>
+              <form className="flex items-center gap-2" onSubmit={handleReviewSubmit}>
+                <label htmlFor="review-rating" className="text-sm text-muted">
+                  Оцените сервис:
+                </label>
+                <select
+                  id="review-rating"
+                  value={reviewRating}
+                  onChange={(event) => setReviewRating(Number(event.target.value))}
+                  className="rounded-[12px] border border-neutral-200 px-3 py-1 text-sm text-text"
+                >
+                  {[5, 4, 3, 2, 1].map((value) => (
+                    <option key={value} value={value}>
+                      {value}
+                    </option>
+                  ))}
+                </select>
+                <Button type="submit" variant="secondary">
+                  Отправить
+                </Button>
+              </form>
+            </div>
+          </Card>
+        </div>
+      )}
     </main>
   );
 }

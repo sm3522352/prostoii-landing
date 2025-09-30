@@ -1,12 +1,25 @@
 import { ReactNode } from "react";
+import clsx from "clsx";
 
-export default function Section({ title, subtitle, children, id }:{title:string, subtitle?:string, children:ReactNode, id?:string}){
+type Props = {
+  id?: string;
+  title: string;
+  subtitle?: string;
+  eyebrow?: string;
+  children: ReactNode;
+  className?: string;
+};
+
+export default function Section({ id, title, subtitle, eyebrow, children, className }: Props) {
   return (
-    <section id={id} className="py-16 lg:py-24">
+    <section id={id} className={clsx("py-16 lg:py-24", className)}>
       <div className="container-soft">
-        <div className="mb-8">
-          <h2 className="text-3xl lg:text-4xl font-semibold" style={{ fontFamily: "var(--font-jost)" }}>{title}</h2>
-          {subtitle && <p className="text-neutral-500 mt-2 max-w-2xl">{subtitle}</p>}
+        <div className="mb-10 max-w-3xl">
+          {eyebrow && <span className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">{eyebrow}</span>}
+          <h2 className="mt-3 text-[32px] font-semibold leading-[1.2] text-text md:text-4xl" style={{ fontFamily: "var(--font-jost)" }}>
+            {title}
+          </h2>
+          {subtitle && <p className="mt-3 text-lg leading-relaxed text-muted">{subtitle}</p>}
         </div>
         {children}
       </div>

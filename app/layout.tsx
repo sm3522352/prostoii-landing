@@ -2,37 +2,97 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Jost, Manrope } from "next/font/google";
 import Button from "@/components/Button";
+import { AppStateProvider } from "@/lib/store";
 
-const jost = Jost({ subsets: ["latin", "cyrillic"], weight: ["600","700"], variable: "--font-jost" });
-const manrope = Manrope({ subsets: ["latin", "cyrillic"], weight: ["400","500"], variable: "--font-manrope" });
+const jost = Jost({ subsets: ["latin", "cyrillic"], weight: ["400", "600"], variable: "--font-jost" });
+const manrope = Manrope({ subsets: ["latin", "cyrillic"], weight: ["400", "600"], variable: "--font-manrope" });
 
 export const metadata: Metadata = {
-  title: "ПростоИИ — Один сервис. Все модели. Ноль сложности.",
-  description: "Личный ИИ‑помощник: обычный чат и готовые рецепты для реальных задач. Понятные модели, приватность и тарифы для семьи и профи."
+  metadataBase: new URL("https://prostoii.ru"),
+  title: "ПростоИИ — понятный ИИ за 60 секунд",
+  description:
+    "ПростоИИ помогает получить понятный результат за минуту: рецепты, чат и автоматический подбор моделей с понятными тарифами и приватностью.",
+  openGraph: {
+    title: "ПростоИИ — понятный ИИ за 60 секунд",
+    description:
+      "Опишите задачу своими словами — мы подберём рецепт, объясним договоры, подготовим письма и сохраним историю.",
+    url: "https://prostoii.ru",
+    siteName: "ПростоИИ",
+    images: [
+      {
+        url: "/og-image.webp",
+        width: 1200,
+        height: 630,
+        type: "image/webp"
+      }
+    ]
+  },
+  alternates: {
+    canonical: "https://prostoii.ru"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ПростоИИ — понятный ИИ за 60 секунд",
+    description:
+      "Готовые рецепты, обычный чат и понятные модели. Начните бесплатно — без карты и сложных настроек.",
+    images: ["/og-image.webp"]
+  }
+};
+
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "ПростоИИ",
+  description:
+    "Понятный ИИ-сервис: рецепты, чат, подбор моделей и прозрачные тарифы. Начните бесплатно, без карты и сложных настроек.",
+  url: "https://prostoii.ru",
+  publisher: {
+    "@type": "Organization",
+    name: "ПростоИИ",
+    url: "https://prostoii.ru",
+    logo: {
+      "@type": "ImageObject",
+      url: "https://prostoii.ru/og-image.webp"
+    }
+  },
+  mainEntity: {
+    "@type": "Product",
+    name: "ПростоИИ",
+    description: "ИИ-помощник с готовыми рецептами, чатом и командным доступом.",
+    offers: {
+      "@type": "AggregateOffer",
+      lowPrice: "0",
+      highPrice: "699",
+      priceCurrency: "RUB",
+      offerCount: 3
+    },
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.8",
+      reviewCount: "12487"
+    }
+  }
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru">
-      <body
-        className={`${jost.variable} ${manrope.variable} antialiased`}
-        style={{ fontFamily: "var(--font-manrope)" }}
-      >
-        {children}
-        <div className="fixed inset-x-0 bottom-0 z-40 bg-white/90 backdrop-blur-md shadow-[0_-8px_24px_-12px_rgba(27,33,53,0.18)] md:hidden">
-          <div className="container-soft py-3">
-            <Button
-              as="a"
-              href="tg://resolve?domain=your_mini_app"
-              data-analytics="click_cta_sticky"
-              aria-label="Начать бесплатно"
-              className="w-full"
-            >
-              Начать бесплатно
-            </Button>
+      <body className={`${jost.variable} ${manrope.variable} antialiased`} style={{ fontFamily: "var(--font-manrope)" }}>
+        <AppStateProvider>
+          {children}
+          <div className="fixed inset-x-0 bottom-0 z-40 bg-white/95 backdrop-blur-lg shadow-[0_-20px_40px_-32px_rgba(15,18,34,0.45)] md:hidden">
+            <div className="container-soft py-3">
+              <Button as="a" href="#hero" className="w-full" aria-label="Начать бесплатно">
+                Начать бесплатно
+              </Button>
+            </div>
           </div>
-        </div>
-        <div id="toast" className="toast" aria-live="polite" aria-atomic="true" />
+          <div id="toast" className="toast" aria-live="polite" aria-atomic="true" />
+        </AppStateProvider>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
       </body>
     </html>
   );
