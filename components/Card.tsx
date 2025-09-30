@@ -5,7 +5,7 @@ export default function Card({ className, ...props }: HTMLAttributes<HTMLDivElem
   return (
     <div
       className={clsx(
-        "bg-white rounded-md shadow-glow hover:shadow-lg transition hover:-translate-y-0.5",
+        "bg-white/90 backdrop-blur-sm rounded-[16px] shadow-soft transition hover:-translate-y-0.5",
         className
       )}
       {...props}
