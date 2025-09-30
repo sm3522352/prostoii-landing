@@ -1,55 +1,49 @@
 "use client";
-import Card from "./Card";
-import Button from "./Button";
 
-type RecipeCardProps = {
-  title: string;
-  benefit: string;
-  icon?: string;
-  loading?: boolean;
+import Card from "./Card";
+import clsx from "clsx";
+import { RecipeCategory, type Recipe } from "@/lib/data";
+
+export type RecipeCardProps = {
+  recipe: Recipe;
+  onLaunch: (recipe: Recipe, tab: RecipeCategory | "Все") => void;
+  tab: RecipeCategory | "Все";
+  variant?: "default" | "featured";
 };
 
-export default function RecipeCard({ title, benefit, icon = "🔆", loading = false }: RecipeCardProps) {
-  const onRun = () => {
-    const el = document.getElementById("toast");
-    if (!el) return;
-    el.textContent = "Покажем в приложении";
-    el.classList.add("toast--visible");
-    setTimeout(() => el.classList.remove("toast--visible"), 2400);
-  };
-
-  if (loading) {
-    return (
-      <Card className="p-4 flex flex-col gap-4" aria-hidden>
-        <div className="h-10 w-10 rounded-full bg-neutral-100" />
-        <div className="space-y-2">
-          <div className="h-4 w-3/4 rounded-full bg-neutral-100" />
-          <div className="h-3 w-2/3 rounded-full bg-neutral-100" />
-        </div>
-        <div className="h-10 w-full rounded-full bg-neutral-100" />
-      </Card>
-    );
-  }
-
+export default function RecipeCard({ recipe, onLaunch, tab, variant = "default" }: RecipeCardProps) {
   return (
-    <Card className="group p-5 flex flex-col gap-4 focus-within:ring-2 focus-within:ring-primary-200">
-      <div className="flex items-center gap-3">
-        <span aria-hidden className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary-50 text-lg">
-          {icon}
-        </span>
-        <div>
-          <div className="text-sm font-semibold text-accent">{title}</div>
-          <p className="text-xs text-neutral-500">{benefit}</p>
-        </div>
-      </div>
-      <Button
-        onClick={onRun}
-        data-analytics="click_recipe"
-        aria-label={`Запустить рецепт «${title}»`}
-        className="mt-auto transform transition will-change-transform group-hover:scale-105 group-hover:shadow-lg"
+    <Card className={clsx("relative h-full overflow-hidden p-0", variant === "featured" && "bg-neutral-50")}>
+      <button
+        type="button"
+        className="flex h-full w-full flex-col gap-4 rounded-[20px] p-6 text-left transition"
+        onClick={() => onLaunch(recipe, tab)}
+        aria-label={`Запустить рецепт «${recipe.title}»`}
       >
-        Запустить
-      </Button>
+        <div className="flex items-start gap-3">
+          <span aria-hidden className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-50 text-xl">
+            {recipe.icon}
+          </span>
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold leading-tight text-text">{recipe.title}</h3>
+            <p className="text-sm text-muted">{recipe.description}</p>
+          </div>
+        </div>
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-3 text-sm font-semibold text-primary">
+          <span className="inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
+            ≈60 сек
+          </span>
+          <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary">
+            Запустить
+            <span aria-hidden>→</span>
+          </span>
+        </div>
+        {recipe.disclaimer && (
+          <p className="mt-2 text-xs text-warning" role="note">
+            {recipe.disclaimer}
+          </p>
+        )}
+      </button>
     </Card>
   );
 }

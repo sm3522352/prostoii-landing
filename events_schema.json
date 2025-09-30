@@ -1,0 +1,18 @@
+{
+  "user_props": ["plan", "is_new", "locale", "device", "ab_variant"],
+  "events": [
+    {"event": "hero_cta_clicked", "props": ["variant", "device"]},
+    {"event": "examples_clicked", "props": ["device"]},
+    {"event": "recipe_card_clicked", "props": ["recipe_id", "tab", "device"]},
+    {"event": "search_used", "props": ["query_len", "results_count"]},
+    {"event": "onboarding_started", "props": ["source"]},
+    {"event": "first_result_generated", "props": ["recipe_id", "time_to_value_sec"]},
+    {"event": "result_copied", "props": ["recipe_id"]},
+    {"event": "result_saved", "props": ["recipe_id"]},
+    {"event": "paywall_viewed", "props": ["position", "variant"]},
+    {"event": "plan_selected", "props": ["plan", "price_rub"]},
+    {"event": "faq_opened", "props": ["question_id"]},
+    {"event": "review_submitted", "props": ["rating"]}
+  ],
+  "activation_criteria": ["first_result_generated", "result_copied"]
+}
