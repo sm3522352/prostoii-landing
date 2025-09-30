@@ -105,38 +105,6 @@ export const recipes: Recipe[] = [
   }
 ];
 
-export type HowStep = {
-  id: number;
-  title: string;
-  placeholder: string;
-  helper: string;
-  image: string;
-};
-
-export const howSteps: HowStep[] = [
-  {
-    id: 1,
-    title: "Опишите задачу по-человечески",
-    placeholder: "Сделай объявление в ЖКХ без конфликта",
-    helper: "Достаточно пары фраз и цели.",
-    image: "/images/how-step-1.webp"
-  },
-  {
-    id: 2,
-    title: "Выберите рецепт",
-    placeholder: "Мы предложим подходящий вариант",
-    helper: "Можно поменять до запуска.",
-    image: "/images/how-step-2.webp"
-  },
-  {
-    id: 3,
-    title: "Получите результат",
-    placeholder: "Скопируйте, сохраните или поделитесь",
-    helper: "Подойдёт для рабочих и личных задач.",
-    image: "/images/how-step-3.webp"
-  }
-];
-
 export type PrivacyCard = {
   title: string;
   description: string;

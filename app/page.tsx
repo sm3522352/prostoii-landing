@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
@@ -17,7 +16,6 @@ import {
   type Testimonial,
   recipeTabs,
   recipes,
-  howSteps,
   privacyCards,
   plans,
   testimonials,
@@ -243,7 +241,7 @@ export default function Page() {
     setOnboardingStage(0);
     setDemoResultReady(false);
     setOnboardingOpen(true);
-    trackEvent("onboarding_started", { source: "how_it_works" });
+    trackEvent("onboarding_started", { source: "hero" });
 
     onboardingTimers.current.push(
       window.setTimeout(() => setOnboardingStage(1), 500),
@@ -335,6 +333,9 @@ export default function Page() {
               >
                 {auth.user ? "Перейти в дашборд" : "Начать бесплатно"}
               </Button>
+              <Button variant="secondary" size="lg" onClick={startOnboarding} aria-label="Попробовать на примере">
+                Попробовать на примере
+              </Button>
               <Button variant="link" onClick={handleExamplesClick} aria-label="Посмотреть примеры">
                 Посмотреть примеры
               </Button>
@@ -408,38 +409,14 @@ export default function Page() {
       </section>
 
       <Section
-        id="how"
-        title="Как это работает"
-        subtitle="Три понятных шага — и всё готово."
+        id="recipes"
+        title="Готовые рецепты"
+        subtitle="Начните с простого — так быстрее получается."
+        spacing="tight"
+        tone="none"
+        bgShift={2}
+        className="mt-4 md:mt-0"
       >
-        <div className="grid gap-4 md:grid-cols-3 md:gap-5">
-          {howSteps.map((step) => (
-            <Card key={step.id} className="flex flex-col gap-4 p-0">
-              <Image
-                src={step.image}
-                alt={step.title}
-                width={360}
-                height={220}
-                sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 360px"
-                className="h-48 w-full rounded-t-[20px] object-cover"
-                loading="lazy"
-              />
-              <div className="space-y-2 p-5 md:p-6">
-                <h3 className="text-lg font-semibold text-text">{step.title}</h3>
-                <p className="text-sm text-muted">{step.placeholder}</p>
-                <p className="text-sm text-muted">{step.helper}</p>
-              </div>
-            </Card>
-          ))}
-        </div>
-        <div className="mt-6">
-          <Button variant="secondary" onClick={startOnboarding} aria-label="Попробовать на примере">
-            Попробовать на примере →
-          </Button>
-        </div>
-      </Section>
-
-      <Section id="recipes" title="Готовые рецепты" subtitle="Начните с простого — так быстрее получается." spacing="tight">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="w-full max-w-xl">
             <label htmlFor="recipe-search" className="sr-only">
@@ -512,7 +489,14 @@ export default function Page() {
         </div>
       </Section>
 
-      <Section id="chat" title="Обычный чат" subtitle="Можно говорить голосом или писать текстом." spacing="tight" tone="muted">
+      <Section
+        id="chat"
+        title="Обычный чат"
+        subtitle="Можно говорить голосом или писать текстом."
+        spacing="tight"
+        tone="muted"
+        bgShift={3}
+      >
         <Card className="space-y-5">
           <div className="flex items-center gap-3 rounded-[20px] border border-neutral-200 bg-white px-4 py-5">
             <button
@@ -550,11 +534,20 @@ export default function Page() {
         id="models"
         title="Понятные модели — без жаргона"
         subtitle="Если не хотите выбирать — мы сделаем это за вас."
+        tone="none"
+        bgShift={0}
       >
         <ModelTable />
       </Section>
 
-      <Section id="privacy" title="Приватность" subtitle="Вы решаете, что хранить." spacing="tight">
+      <Section
+        id="privacy"
+        title="Приватность"
+        subtitle="Вы решаете, что хранить."
+        spacing="tight"
+        tone="soft"
+        bgShift={4}
+      >
         <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-muted">
           <span aria-hidden>🛡️</span>
           Надёжные провайдеры в ЕС • Совместимо с требованиями РФ
@@ -584,6 +577,8 @@ export default function Page() {
         id="pricing"
         title="Тарифы"
         subtitle="Оплата картой, СБП и МИР. Отмена — в один клик."
+        tone="none"
+        bgShift={2}
       >
         <div className="grid gap-4 md:grid-cols-3 md:gap-5">
           {plans.map((plan) => (
@@ -634,7 +629,14 @@ export default function Page() {
         )}
       </Section>
 
-      <Section id="testimonials" title="Отзывы" subtitle="До и после — коротко и по делу." spacing="tight" tone="muted">
+      <Section
+        id="testimonials"
+        title="Отзывы"
+        subtitle="До и после — коротко и по делу."
+        spacing="tight"
+        tone="muted"
+        bgShift={1}
+      >
         <div className="flex flex-col gap-4">
           <div className="text-sm font-semibold text-muted">★ 4,8 (за 30 дней)</div>
           <div className="-mx-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-4" role="region" aria-label="Истории пользователей">
@@ -656,7 +658,14 @@ export default function Page() {
       </Section>
       <div className="section-divider my-8 md:my-10" />
 
-      <Section id="faq" title="FAQ" subtitle="Ответы на самые частые вопросы." spacing="tight">
+      <Section
+        id="faq"
+        title="FAQ"
+        subtitle="Ответы на самые частые вопросы."
+        spacing="tight"
+        tone="none"
+        bgShift={0}
+      >
         <div className="grid gap-4 md:grid-cols-2 md:gap-5">
           {faqs.map((faq) => (
             <FAQItem key={faq.id} {...faq} />
