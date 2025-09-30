@@ -85,7 +85,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </Button>
             </div>
           </div>
-          <div id="toast" className="toast" aria-live="polite" aria-atomic="true" />
+          <div id="toast" className="toast" role="status" aria-live="polite" aria-atomic="true" />
         </AppStateProvider>
         <Script
           id="prostoii-ld"

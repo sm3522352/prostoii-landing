@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Button from "@/components/Button";
@@ -27,6 +27,65 @@ import { useDebouncedValue } from "@/lib/useDebouncedValue";
 
 const heroBadges = ["Рекомендовано учителями", "Рекомендовано менеджерами", "Рекомендовано родителями"];
 const chatChips = ["Сделай проще", "Объясни как ребёнку", "Списком", "Примеры", "Исправь ошибки"];
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
+
+function useFocusTrap(isOpen: boolean, ref: RefObject<HTMLElement | null>, refreshKey?: unknown) {
+  useEffect(() => {
+    const node = ref.current;
+
+    if (!isOpen || !node) {
+      return;
+    }
+
+    const focusFirst = () => {
+      const elements = Array.from(
+        node.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
+      ).filter((element) => !element.hasAttribute("disabled") && element.getAttribute("aria-hidden") !== "true");
+
+      elements[0]?.focus();
+    };
+
+    focusFirst();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const elements = Array.from(
+        node.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
+      ).filter((element) => !element.hasAttribute("disabled") && element.getAttribute("aria-hidden") !== "true");
+
+      if (elements.length === 0) {
+        return;
+      }
+
+      const firstElement = elements[0];
+      const lastElement = elements[elements.length - 1];
+      const activeElement = document.activeElement as HTMLElement | null;
+
+      if (event.shiftKey) {
+        if (!activeElement || !node.contains(activeElement) || activeElement === firstElement) {
+          event.preventDefault();
+          lastElement.focus();
+        }
+        return;
+      }
+
+      if (!activeElement || !node.contains(activeElement) || activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    node.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      node.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, ref, refreshKey]);
+}
 
 function showToast(message: string) {
   const el = document.getElementById("toast");
@@ -56,6 +115,13 @@ export default function Page() {
   const [reviewsPage, setReviewsPage] = useState(1);
   const [demoResultReady, setDemoResultReady] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
+
+  const onboardingDialogRef = useRef<HTMLDivElement>(null);
+  const planDialogRef = useRef<HTMLDivElement>(null);
+  const reviewsDialogRef = useRef<HTMLDivElement>(null);
+  const onboardingDialogTitleId = "onboarding-dialog-title";
+  const planDialogTitleId = "plan-dialog-title";
+  const reviewsDialogTitleId = "reviews-dialog-title";
 
   const activePlan = plans.find((plan) => plan.id === selectedPlanId) ?? null;
 
@@ -135,6 +201,47 @@ export default function Page() {
     return fullReviews.slice(start, start + reviewsPerPage);
   }, [fullReviews, reviewsPage, reviewsPerPage]);
 
+  useFocusTrap(onboardingOpen, onboardingDialogRef, demoResultReady);
+  useFocusTrap(Boolean(activePlan), planDialogRef, selectedPlanId);
+  useFocusTrap(reviewsModalOpen, reviewsDialogRef, `${reviewsPage}-${paginatedReviews.length}`);
+
+  const closeOnboarding = useCallback(() => {
+    setOnboardingOpen(false);
+    onboardingTimers.current.forEach((timer) => window.clearTimeout(timer));
+    onboardingTimers.current = [];
+    onboardingStartedAt.current = null;
+    setDemoResultReady(false);
+  }, []);
+
+  useEffect(() => {
+    if (!onboardingOpen && !activePlan && !reviewsModalOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      if (reviewsModalOpen) {
+        setReviewsModalOpen(false);
+        return;
+      }
+
+      if (activePlan) {
+        setSelectedPlanId(null);
+        return;
+      }
+
+      if (onboardingOpen) {
+        closeOnboarding();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activePlan, closeOnboarding, onboardingOpen, reviewsModalOpen]);
+
   const startOnboarding = () => {
     onboardingTimers.current.forEach((timer) => window.clearTimeout(timer));
     onboardingTimers.current = [];
@@ -154,14 +261,6 @@ export default function Page() {
         showToast("Готово. Сохраните, поделитесь или запустите следующий рецепт.");
       }, 2000)
     );
-  };
-
-  const closeOnboarding = () => {
-    setOnboardingOpen(false);
-    onboardingTimers.current.forEach((timer) => window.clearTimeout(timer));
-    onboardingTimers.current = [];
-    onboardingStartedAt.current = null;
-    setDemoResultReady(false);
   };
 
   const handleHeroCTA = () => {
@@ -220,8 +319,8 @@ export default function Page() {
 
   return (
     <main className="pb-24 md:pb-0">
-      <section id="hero" className="hero-surface relative overflow-hidden pb-16 pt-24 lg:pt-28">
-        <div className="container-soft grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]">
+      <section id="hero" className="hero-surface relative overflow-hidden pb-12 pt-20 md:pb-16 md:pt-24">
+        <div className="container-soft grid items-center gap-10 md:gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]">
           <div className="space-y-6">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-primary">
               Понятный помощник
@@ -255,8 +354,8 @@ export default function Page() {
               ))}
             </div>
           </div>
-          <Card className="relative overflow-hidden border border-white/60 bg-white/90 p-0 shadow-[0_32px_80px_-44px_rgba(15,18,34,0.6)]">
-            <div className="space-y-5 p-6">
+          <Card className="relative overflow-hidden border border-white/60 bg-white/90 shadow-[0_24px_60px_-36px_rgba(15,18,34,0.3)]">
+            <div className="space-y-5">
               <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.2em] text-muted">
                 <span>Рецепт</span>
                 <span className="text-success">Готово на 100%</span>
@@ -315,7 +414,7 @@ export default function Page() {
         title="Как это работает"
         subtitle="Три понятных шага — и всё готово."
       >
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-3 md:gap-5">
           {howSteps.map((step) => (
             <Card key={step.id} className="flex flex-col gap-4 p-0">
               <Image
@@ -323,11 +422,11 @@ export default function Page() {
                 alt={step.title}
                 width={360}
                 height={220}
-                sizes="(min-width: 1024px) 360px, (min-width: 768px) 50vw, 100vw"
+                sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 360px"
                 className="h-48 w-full rounded-t-[20px] object-cover"
                 loading="lazy"
               />
-              <div className="space-y-2 p-6">
+              <div className="space-y-2 p-5 md:p-6">
                 <h3 className="text-lg font-semibold text-text">{step.title}</h3>
                 <p className="text-sm text-muted">{step.placeholder}</p>
                 <p className="text-sm text-muted">{step.helper}</p>
@@ -342,8 +441,8 @@ export default function Page() {
         </div>
       </Section>
 
-      <Section id="recipes" title="Готовые рецепты" subtitle="Начните с простого — так быстрее получается.">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <Section id="recipes" title="Готовые рецепты" subtitle="Начните с простого — так быстрее получается." spacing="tight">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="w-full max-w-xl">
             <label htmlFor="recipe-search" className="sr-only">
               Напишите, что нужно сделать — мы предложим рецепт
@@ -395,7 +494,7 @@ export default function Page() {
             ))}
           </div>
         </div>
-        <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 xl:grid-cols-3">
           {featuredRecipes.map((recipe) => (
             <div key={recipe.id} className="md:col-span-2 xl:col-span-1">
               <RecipeCard recipe={recipe} tab={activeTab} onLaunch={handleLaunchRecipe} variant="featured" />
@@ -415,7 +514,7 @@ export default function Page() {
         </div>
       </Section>
 
-      <Section id="chat" title="Обычный чат" subtitle="Можно говорить голосом или писать текстом.">
+      <Section id="chat" title="Обычный чат" subtitle="Можно говорить голосом или писать текстом." spacing="tight" tone="muted">
         <Card className="space-y-5">
           <div className="flex items-center gap-3 rounded-[20px] border border-neutral-200 bg-white px-4 py-5">
             <button
@@ -457,12 +556,12 @@ export default function Page() {
         <ModelTable />
       </Section>
 
-      <Section id="privacy" title="Приватность" subtitle="Вы решаете, что хранить.">
+      <Section id="privacy" title="Приватность" subtitle="Вы решаете, что хранить." spacing="tight">
         <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-muted">
           <span aria-hidden>🛡️</span>
           Надёжные провайдеры в ЕС • Совместимо с требованиями РФ
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-3 md:gap-5">
           {privacyCards.map((card) => (
             <Card key={card.title} className="flex h-full flex-col justify-between">
               <div>
@@ -481,18 +580,20 @@ export default function Page() {
         </div>
       </Section>
 
+      <div className="section-divider my-8 md:my-10" />
+
       <Section
         id="pricing"
         title="Тарифы"
         subtitle="Оплата картой, СБП и МИР. Отмена — в один клик."
       >
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-3 md:gap-5">
           {plans.map((plan) => (
             <Card
               key={plan.id}
               className={`flex h-full flex-col ${plan.highlight ? "border-primary-300 bg-primary-50" : "bg-white"}`}
             >
-              <div className="space-y-3 p-6">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xl font-semibold text-text">{plan.name}</span>
                   {plan.highlight && (
@@ -509,7 +610,7 @@ export default function Page() {
                   ))}
                 </ul>
               </div>
-              <div className="mt-auto space-y-2 p-6 pt-0">
+              <div className="mt-auto space-y-2 pt-4 md:pt-5">
                 <Button className="w-full" onClick={() => openPlanModal(plan.id)} aria-label={`Выбрать тариф ${plan.name}`}>
                   Выбрать
                 </Button>
@@ -535,7 +636,7 @@ export default function Page() {
         )}
       </Section>
 
-      <Section id="testimonials" title="Отзывы" subtitle="До и после — коротко и по делу.">
+      <Section id="testimonials" title="Отзывы" subtitle="До и после — коротко и по делу." spacing="tight" tone="muted">
         <div className="flex flex-col gap-4">
           <div className="text-sm font-semibold text-muted">★ 4,8 (за 30 дней)</div>
           <div className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-4" role="region" aria-label="Истории пользователей">
@@ -556,8 +657,10 @@ export default function Page() {
         </div>
       </Section>
 
-      <Section id="faq" title="FAQ" subtitle="Ответы на самые частые вопросы.">
-        <div className="grid gap-4 md:grid-cols-2">
+      <div className="section-divider my-8 md:my-10" />
+
+      <Section id="faq" title="FAQ" subtitle="Ответы на самые частые вопросы." spacing="tight">
+        <div className="grid gap-4 md:grid-cols-2 md:gap-5">
           {faqs.map((faq) => (
             <FAQItem key={faq.id} {...faq} />
           ))}
@@ -592,17 +695,26 @@ export default function Page() {
 
       {onboardingOpen && (
         <div
-          role="dialog"
-          aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,18,34,0.55)] px-4"
+          onClick={closeOnboarding}
         >
-          <Card className="w-full max-w-lg bg-white">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-semibold text-text">Первый результат</h3>
-              <button type="button" aria-label="Закрыть" onClick={closeOnboarding} className="text-muted">
-                ✕
-              </button>
-            </div>
+          <div
+            ref={onboardingDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={onboardingDialogTitleId}
+            className="w-full max-w-lg"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <Card className="w-full bg-white">
+              <div className="flex items-center justify-between">
+                <h3 id={onboardingDialogTitleId} className="text-xl font-semibold text-text">
+                  Первый результат
+                </h3>
+                <button type="button" aria-label="Закрыть" onClick={closeOnboarding} className="text-muted">
+                  ✕
+                </button>
+              </div>
             <div className="mt-4 space-y-4">
               <p className="text-sm text-muted">Шаг {onboardingStage + 1} из 3</p>
               <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-100">
@@ -636,23 +748,33 @@ export default function Page() {
                 </div>
               )}
             </div>
-          </Card>
+            </Card>
+          </div>
         </div>
       )}
 
       {activePlan && (
         <div
-          role="dialog"
-          aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,18,34,0.55)] px-4"
+          onClick={() => setSelectedPlanId(null)}
         >
-          <Card className="w-full max-w-md bg-white">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-semibold text-text">Оплата тарифа «{activePlan.name}»</h3>
-              <button type="button" aria-label="Закрыть" onClick={() => setSelectedPlanId(null)} className="text-muted">
-                ✕
-              </button>
-            </div>
+          <div
+            ref={planDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={planDialogTitleId}
+            className="w-full max-w-md"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <Card className="w-full bg-white">
+              <div className="flex items-center justify-between">
+                <h3 id={planDialogTitleId} className="text-xl font-semibold text-text">
+                  Оплата тарифа «{activePlan.name}»
+                </h3>
+                <button type="button" aria-label="Закрыть" onClick={() => setSelectedPlanId(null)} className="text-muted">
+                  ✕
+                </button>
+              </div>
             <p className="mt-2 text-sm text-muted">Выберите удобный способ оплаты.</p>
             <div className="mt-4 space-y-3">
               {["Карта", "СБП", "МИР"].map((method) => (
@@ -666,23 +788,33 @@ export default function Page() {
                 </Button>
               ))}
             </div>
-          </Card>
+            </Card>
+          </div>
         </div>
       )}
 
       {reviewsModalOpen && (
         <div
-          role="dialog"
-          aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,18,34,0.55)] px-4"
+          onClick={() => setReviewsModalOpen(false)}
         >
-          <Card className="w-full max-w-4xl bg-white">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-semibold text-text">Отзывы пользователей</h3>
-              <button type="button" aria-label="Закрыть" onClick={() => setReviewsModalOpen(false)} className="text-muted">
-                ✕
-              </button>
-            </div>
+          <div
+            ref={reviewsDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={reviewsDialogTitleId}
+            className="w-full max-w-4xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <Card className="w-full bg-white">
+              <div className="flex items-center justify-between">
+                <h3 id={reviewsDialogTitleId} className="text-xl font-semibold text-text">
+                  Отзывы пользователей
+                </h3>
+                <button type="button" aria-label="Закрыть" onClick={() => setReviewsModalOpen(false)} className="text-muted">
+                  ✕
+                </button>
+              </div>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               {paginatedReviews.map((review) => (
                 <Card key={review.id} className="bg-neutral-50">
@@ -736,7 +868,8 @@ export default function Page() {
                 </Button>
               </form>
             </div>
-          </Card>
+            </Card>
+          </div>
         </div>
       )}
     </main>
