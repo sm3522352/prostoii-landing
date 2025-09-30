@@ -48,7 +48,7 @@ export default function Section({
           <h2 className="mt-3 text-[32px] font-semibold leading-[1.2] text-text md:text-4xl" style={{ fontFamily: "var(--font-jost)" }}>
             {title}
           </h2>
-          {subtitle && <p className="mt-3 text-lg leading-relaxed text-muted">{subtitle}</p>}
+          {subtitle && <p className="mt-2 text-base leading-relaxed text-muted md:text-lg">{subtitle}</p>}
         </div>
         {children}
       </div>

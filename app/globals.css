@@ -69,6 +69,12 @@ body {
   background-color: var(--primary);
 }
 
+.section-divider {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(90deg, transparent, rgba(15, 18, 34, 0.08), transparent);
+}
+
 .container-soft {
   max-width: 1200px;
   margin: 0 auto;
