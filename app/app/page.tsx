@@ -1,381 +1,270 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import Card from "@/components/Card";
 import { showToast } from "@/lib/toast";
 import { trackEvent } from "@/lib/analytics";
-
-type DashboardResult = {
-  id: string;
-  title: string;
-  snippet: string;
-  updatedAt: string;
-  pinned: boolean;
-  type: "recipe" | "chat" | "file";
-};
-
-const quickActions = [
-  {
-    id: "recipe",
-    title: "Новый рецепт",
-    description: "Подберите готовую инструкцию под задачу",
-    hint: "2 мин",
-    href: "/app/recipes",
-  },
-  {
-    id: "chat",
-    title: "Открыть чат",
-    description: "Спросите своими словами — ответим просто",
-    hint: "Через 5 сек",
-    href: "/app/chat",
-  },
-  {
-    id: "file",
-    title: "Загрузить файл",
-    description: "Документы, таблицы и презентации",
-    hint: "До 20 МБ",
-    href: "/app/files",
-  },
-];
-
-const initialResults: DashboardResult[] = [
-  {
-    id: "1",
-    title: "План урока: энергия и заряд",
-    snippet: "Вступление, объяснение через аналогии и задания на закрепление...",
-    updatedAt: "5 минут назад",
-    pinned: true,
-    type: "recipe",
-  },
-  {
-    id: "2",
-    title: "Письмо клиенту: перенос встреч",
-    snippet: "Добрый день! Понимаем, что сроки сдвинулись. Предлагаю два окна...",
-    updatedAt: "18 минут назад",
-    pinned: false,
-    type: "chat",
-  },
-  {
-    id: "3",
-    title: "Резюме разговора с командой",
-    snippet: "Собрали задачи, уточнили сроки и добавили follow-up на понедельник...",
-    updatedAt: "Вчера",
-    pinned: true,
-    type: "chat",
-  },
-  {
-    id: "4",
-    title: "Разбор договора поставки",
-    snippet: "Основные риски: пункт 4.2, уточнить ответственность за доставку...",
-    updatedAt: "2 дня назад",
-    pinned: false,
-    type: "file",
-  },
-];
-
-const typeLabels: Record<DashboardResult["type"], string> = {
-  recipe: "Рецепт",
-  chat: "Чат",
-  file: "Файл",
-};
-
-const navigationTiles = [
-  {
-    id: "recipes",
-    title: "Рецепты",
-    description: "Подбор готовых сценариев и инструкций",
-    href: "/app/recipes",
-  },
-  {
-    id: "chat",
-    title: "Чат",
-    description: "Диалог с ИИ простыми словами",
-    href: "/app/chat",
-  },
-  {
-    id: "files",
-    title: "Файлы",
-    description: "Загрузки, разборы и конспекты",
-    href: "/app/files",
-  },
-  {
-    id: "team",
-    title: "Команда",
-    description: "Совместная работа и роли",
-    href: "/app/team",
-  },
-  {
-    id: "settings",
-    title: "Настройки",
-    description: "Профиль, тариф и интеграции",
-    href: "/app/settings",
-  },
-];
+import {
+  continueItems,
+  fileIcons,
+  fileItems,
+  hintPills,
+  pinnedRecipes,
+  quickActions,
+} from "./home-data";
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const [results, setResults] = useState(initialResults);
+  const [activeHint, setActiveHint] = useState(0);
 
-  const pinnedResults = useMemo(() => results.filter((result) => result.pinned), [results]);
-  const recentResults = useMemo(() => results.filter((result) => !result.pinned), [results]);
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setActiveHint((index) => (index + 1) % hintPills.length);
+    }, 6000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const visibleHints = useMemo(() => {
+    if (hintPills.length <= 3) return hintPills;
+    const sequence: string[] = [];
+    for (let i = 0; i < 3; i += 1) {
+      sequence.push(hintPills[(activeHint + i) % hintPills.length]);
+    }
+    return sequence;
+  }, [activeHint]);
 
   const handleQuickAction = (href: string) => {
-    if (href.includes("/recipes")) {
+    if (href.includes("recipes")) {
       trackEvent("recipe_launch", { source: "dashboard" });
-    } else if (href.includes("/chat")) {
-      trackEvent("chat_send", { source: "dashboard" });
-    } else if (href.includes("/files")) {
-      trackEvent("file_upload", { source: "dashboard" });
     }
-    router.push(href);
+    if (href.includes("chat")) {
+      trackEvent("chat_open", { source: "dashboard" });
+    }
+    if (href.includes("files")) {
+      trackEvent("file_upload_open", { source: "dashboard" });
+    }
   };
 
-  const handleTogglePin = (id: string) => {
-    setResults((items) =>
-      items.map((item) => (item.id === id ? { ...item, pinned: !item.pinned } : item))
-    );
-    showToast("Обновили закрепление");
-  };
-
-  const handleDelete = (id: string) => {
-    setResults((items) => items.filter((item) => item.id !== id));
-    showToast("Удалено");
-  };
-
-  const handleCopy = (id: string) => {
-    const item = results.find((result) => result.id === id);
-    if (!item) return;
-    showToast("Скопировали в буфер обмена");
-  };
-
-  const handleShare = () => {
-    showToast("Ссылка скопирована");
+  const handleHintClick = (text: string) => {
+    showToast(`Подсказка добавлена: ${text}`);
   };
 
   return (
-    <div className="space-y-6 lg:space-y-8">
-      <section className="scroll-reveal">
-        <div className="flex flex-col gap-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.32em] text-primary">Навигация</p>
-          <h2 className="text-xl font-semibold text-text">Быстрый переход по разделам</h2>
-        </div>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {navigationTiles.map((tile) => (
-            <button
-              key={tile.id}
-              type="button"
-              onClick={() => router.push(tile.href)}
-              className="group flex flex-col items-start gap-3 rounded-2xl border border-neutral-200/70 bg-white/95 px-5 py-5 text-left shadow-soft transition hover:-translate-y-0.5 hover:shadow-soft-lg"
-            >
-              <span className="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-muted">
-                Раздел
-              </span>
-              <span className="text-lg font-semibold text-text">{tile.title}</span>
-              <span className="text-sm text-muted">{tile.description}</span>
-              <span className="inline-flex items-center text-sm font-semibold text-primary">
-                Перейти
-                <span aria-hidden className="ml-1 transition group-hover:translate-x-0.5">
-                  →
-                </span>
-              </span>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section className="scroll-reveal">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-semibold text-text">Домашняя</h1>
-          <p className="text-sm text-muted">
-            Начните с быстрого действия, посмотрите последние ответы или обновите тариф.
-          </p>
-        </div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          {quickActions.map((action) => (
-            <button
-              key={action.id}
-              type="button"
-              onClick={() => handleQuickAction(action.href)}
-              className="group rounded-2xl border border-neutral-200/70 bg-white/95 px-5 py-5 text-left shadow-soft transition hover:-translate-y-0.5 hover:shadow-soft-lg"
-            >
-              <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                {action.hint}
-              </span>
-              <h2 className="mt-4 text-lg font-semibold text-text">{action.title}</h2>
-              <p className="mt-2 text-sm text-muted">{action.description}</p>
-              <span className="mt-4 inline-flex items-center text-sm font-semibold text-primary">
-                Перейти
-                <span aria-hidden className="ml-1 transition group-hover:translate-x-0.5">
-                  →
-                </span>
-              </span>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section className="scroll-reveal space-y-4">
-        <div className="flex items-center justify-between">
+    <>
+      <div className="flex flex-col gap-8 xl:col-span-8">
+        <section className="space-y-3">
           <div>
-            <h2 className="text-xl font-semibold text-text">Последние результаты</h2>
-            <p className="text-sm text-muted">Всё, что генерировали недавно — чаты, рецепты и файлы.</p>
+            <h2 className="text-[20px] font-semibold leading-6 text-[var(--text)]">Быстрые действия</h2>
+            <p className="mt-3 text-sm leading-5 text-[color-mix(in_srgb,var(--text)_60%,transparent)]">
+              Начните с ключевого сценария — новый рецепт, чат или загрузка файла.
+            </p>
           </div>
-          <button
-            type="button"
-            onClick={() => showToast("Обновили ленту")}
-            className="hidden rounded-xl border border-neutral-200/70 px-4 py-2 text-sm font-semibold text-muted transition hover:text-text sm:inline-flex"
-          >
-            Обновить
-          </button>
-        </div>
-        <div className="grid gap-3 lg:grid-cols-2">
-          {recentResults.length === 0 && (
-            <Card className="col-span-full flex flex-col items-start gap-3">
-              <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">Пока пусто</span>
-              <p className="text-lg font-semibold text-text">Здесь появятся свежие ответы</p>
-              <p className="text-sm text-muted">
-                Создайте рецепт, начните чат или загрузите файл, чтобы увидеть историю здесь.
-              </p>
-              <button
-                type="button"
-                onClick={() => handleQuickAction("/app/recipes")}
-                className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary/90"
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {quickActions.map((action) => (
+              <Link
+                key={action.id}
+                href={action.href}
+                className="group flex min-h-[116px] flex-col justify-between rounded-2xl border border-[var(--muted-border)] bg-[var(--surface)] px-5 py-5 transition-transform duration-200 hover:-translate-y-0.5 hover:border-[var(--primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--primary)_45%,transparent)]"
+                onClick={() => handleQuickAction(action.href)}
               >
-                Создать первый рецепт
-              </button>
-            </Card>
-          )}
-          {recentResults.map((result) => (
-            <Card key={result.id} className="flex flex-col gap-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <span className="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-muted">
-                    {typeLabels[result.type]}
+                <div className="flex items-start justify-between">
+                  <div className="flex flex-col gap-2">
+                    <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] text-lg">
+                      {action.icon}
+                    </span>
+                    <h3 className="text-[18px] font-semibold leading-6 text-[var(--text)]">{action.title}</h3>
+                    <p className="text-sm leading-5 text-[color-mix(in_srgb,var(--text)_60%,transparent)]">{action.description}</p>
+                  </div>
+                  <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[color-mix(in_srgb,var(--text)_55%,transparent)]">
+                    {action.hint}
                   </span>
-                  <h3 className="mt-3 text-lg font-semibold text-text">{result.title}</h3>
-                  <p className="mt-2 text-sm text-muted">{result.snippet}</p>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleCopy(result.id)}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200/70 text-muted transition hover:text-text"
-                    aria-label="Скопировать"
-                  >
-                    ⧉
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleShare}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200/70 text-muted transition hover:text-text"
-                    aria-label="Поделиться"
-                  >
-                    ↗
-                  </button>
+                <span className="inline-flex items-center text-sm font-semibold text-[var(--primary)]">
+                  Перейти →
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="text-[20px] font-semibold leading-6 text-[var(--text)]">Продолжить</h2>
+              <p className="mt-2 text-sm leading-5 text-[color-mix(in_srgb,var(--text)_60%,transparent)]">
+                Возвращайтесь к последним диалогам, черновикам и рецептам.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => showToast("Обновили ленту")}
+              className="inline-flex h-10 items-center rounded-full border border-[var(--muted-border)] px-4 text-sm font-semibold text-[color-mix(in_srgb,var(--text)_65%,transparent)] transition hover:border-[var(--primary)] hover:text-[var(--primary)]"
+            >
+              Обновить
+            </button>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            {continueItems.length === 0 && (
+              <Card className="md:col-span-2 flex flex-col items-start gap-3" size="md">
+                <span className="inline-flex items-center rounded-full bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] px-3 py-1 text-xs font-semibold text-[var(--primary)]">
+                  Пока пусто
+                </span>
+                <p className="text-[18px] font-semibold leading-6 text-[var(--text)]">
+                  Пока пусто. Начните с нового рецепта.
+                </p>
+                <button
+                  type="button"
+                  className="inline-flex h-10 items-center rounded-full bg-[var(--primary)] px-5 text-sm font-semibold text-[var(--white)]"
+                  onClick={() => handleQuickAction("/app/recipes?new=1")}
+                >
+                  Создать первый рецепт
+                </button>
+              </Card>
+            )}
+
+            {continueItems.map((item) => (
+              <Card key={item.id} className="flex flex-col justify-between gap-4" size="md" interactive>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between text-xs font-semibold text-[color-mix(in_srgb,var(--text)_55%,transparent)]">
+                    <span>{item.type}</span>
+                    <span>{item.updatedAt}</span>
+                  </div>
+                  <h3 className="text-[18px] font-semibold leading-6 text-[var(--text)]">{item.title}</h3>
+                  <p className="line-clamp-3 text-sm leading-5 text-[color-mix(in_srgb,var(--text)_62%,transparent)]">{item.description}</p>
                 </div>
-              </div>
-              <div className="flex items-center justify-between text-xs text-muted">
-                <span>{result.updatedAt}</span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between gap-2">
                   <button
                     type="button"
-                    onClick={() => handleTogglePin(result.id)}
-                    className="inline-flex items-center gap-1 rounded-xl border border-neutral-200/70 px-3 py-1.5 text-xs font-semibold text-muted transition hover:text-text"
+                    className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--muted-border)] px-4 text-sm font-semibold text-[color-mix(in_srgb,var(--text)_70%,transparent)] transition hover:border-[var(--primary)] hover:text-[var(--primary)]"
                   >
-                    {result.pinned ? "Открепить" : "Закрепить"}
+                    Продолжить
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleDelete(result.id)}
-                    className="inline-flex items-center gap-1 rounded-xl border border-neutral-200/70 px-3 py-1.5 text-xs font-semibold text-muted transition hover:text-error"
+                    className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--muted-border)] px-4 text-sm font-semibold text-[color-mix(in_srgb,var(--text)_60%,transparent)] transition hover:text-[var(--error)]"
                   >
                     Удалить
-                  </button>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      <section className="scroll-reveal space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-text">Закреплённые</h2>
-            <p className="text-sm text-muted">То, к чему вы часто возвращаетесь.</p>
-          </div>
-        </div>
-        {pinnedResults.length === 0 ? (
-          <Card className="flex flex-col items-start gap-3">
-            <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-muted">Пока пусто</span>
-            <p className="text-lg font-semibold text-text">Закрепите важные результаты</p>
-            <p className="text-sm text-muted">Нажмите «Закрепить» у результата, чтобы видеть его здесь.</p>
-          </Card>
-        ) : (
-          <div className="grid gap-3 md:grid-cols-2">
-            {pinnedResults.map((result) => (
-              <Card key={`pinned-${result.id}`} className="flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">Закреплено</span>
-                  <span className="text-xs text-muted">{result.updatedAt}</span>
-                </div>
-                <h3 className="text-lg font-semibold text-text">{result.title}</h3>
-                <p className="text-sm text-muted">{result.snippet}</p>
-                <div className="flex items-center justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleQuickAction(result.type === "chat" ? "/app/chat" : "/app/recipes")}
-                    className="inline-flex items-center gap-1 rounded-xl border border-neutral-200/70 px-3 py-1.5 text-xs font-semibold text-muted transition hover:text-text"
-                  >
-                    Открыть
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleTogglePin(result.id)}
-                    className="inline-flex items-center gap-1 rounded-xl border border-neutral-200/70 px-3 py-1.5 text-xs font-semibold text-muted transition hover:text-text"
-                  >
-                    Открепить
                   </button>
                 </div>
               </Card>
             ))}
           </div>
-        )}
-      </section>
+        </section>
 
-      <section className="scroll-reveal">
-        <Card className="flex flex-col gap-4 bg-gradient-to-r from-primary/8 via-primary/6 to-primary/10">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-semibold text-text">Лимиты и тариф</h2>
-              <p className="mt-1 text-sm text-muted">Вы израсходовали 24 из 50 генераций. Продлите доступ, чтобы не останавливаться.</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                trackEvent("plan_upgrade", { source: "dashboard_limits" });
-                showToast("Переходим к тарифам");
-              }}
-              className="inline-flex items-center justify-center rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-white transition hover:bg-primary/90"
-            >
-              Обновить
-            </button>
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-[20px] font-semibold leading-6 text-[var(--text)]">Закреплённые рецепты</h2>
           </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs font-semibold text-muted">
-              <span>Использовано</span>
-              <span>24 / 50</span>
+          {pinnedRecipes.length === 0 ? (
+            <Card className="flex flex-col gap-3" size="md">
+              <p className="text-[18px] font-semibold leading-6 text-[var(--text)]">
+                Ничего не закреплено
+              </p>
+              <p className="text-sm leading-5 text-[color-mix(in_srgb,var(--text)_60%,transparent)]">
+                Закрепляйте важные рецепты, чтобы держать их под рукой.
+              </p>
+            </Card>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {pinnedRecipes.map((recipe) => (
+                <Card key={recipe.id} className="flex flex-col gap-3" size="sm" interactive>
+                  <div className="flex items-center justify-between text-xs font-semibold text-[color-mix(in_srgb,var(--text)_55%,transparent)]">
+                    <span>Закреплено</span>
+                    <button type="button" className="text-[color-mix(in_srgb,var(--text)_65%,transparent)]">
+                      Открепить
+                    </button>
+                  </div>
+                  <h3 className="text-[17px] font-semibold leading-6 text-[var(--text)]">{recipe.title}</h3>
+                  <p className="line-clamp-3 text-sm leading-5 text-[color-mix(in_srgb,var(--text)_60%,transparent)]">{recipe.summary}</p>
+                  <button
+                    type="button"
+                    className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--muted-border)] px-4 text-sm font-semibold text-[var(--primary)] transition hover:border-[var(--primary)]"
+                  >
+                    Запустить
+                  </button>
+                </Card>
+              ))}
             </div>
-            <div className="h-2 rounded-full bg-white/60">
-              <div className="h-full rounded-full bg-primary" style={{ width: "48%" }} />
+          )}
+        </section>
+
+        <section className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-[20px] font-semibold leading-6 text-[var(--text)]">Файлы</h2>
+            <Link
+              href="/app/files"
+              className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--muted-border)] px-4 text-sm font-semibold text-[color-mix(in_srgb,var(--text)_70%,transparent)] transition hover:border-[var(--primary)] hover:text-[var(--primary)]"
+            >
+              Все файлы
+            </Link>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            {fileItems.map((file) => (
+              <Card key={file.id} className="flex items-center gap-3" size="sm" interactive>
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] text-lg">
+                  {fileIcons[file.kind]}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[15px] font-semibold leading-5 text-[var(--text)]">{file.name}</p>
+                  <p className="text-sm leading-5 text-[color-mix(in_srgb,var(--text)_60%,transparent)]">
+                    {file.size} • {file.updatedAt}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--muted-border)] px-3 text-sm font-semibold text-[color-mix(in_srgb,var(--text)_60%,transparent)] transition hover:text-[var(--primary)]"
+                >
+                  Открыть
+                </button>
+              </Card>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <aside className="flex flex-col gap-6 xl:col-span-4">
+        <Card className="flex flex-col gap-4" size="md">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-[18px] font-semibold leading-6 text-[var(--text)]">Лимит на сегодня</h3>
+              <p className="text-sm leading-5 text-[color-mix(in_srgb,var(--text)_60%,transparent)]">20 из 100 запросов</p>
             </div>
-            <p className="text-xs text-muted">
-              Бесплатный план. Обновление до «Команды» добавит ещё 200 генераций, общую папку и контроль доступа.
+            <span className="text-sm font-semibold text-[color-mix(in_srgb,var(--primary)_80%,transparent)]">20%</span>
+          </div>
+          <div className="h-2 rounded-full bg-[color-mix(in_srgb,var(--text)_8%,transparent)]">
+            <div className="h-full rounded-full bg-[var(--primary)]" style={{ width: "20%" }} aria-hidden />
+          </div>
+          <button
+            type="button"
+            className="inline-flex h-10 items-center justify-center rounded-full bg-[var(--primary)] px-4 text-sm font-semibold text-[var(--white)]"
+            onClick={() => trackEvent("plan_upgrade", { source: "dashboard_widget" })}
+          >
+            Продлить
+          </button>
+        </Card>
+
+        <Card className="flex flex-col gap-3" size="md">
+          <div>
+            <h3 className="text-[18px] font-semibold leading-6 text-[var(--text)]">Подсказки к запросам</h3>
+            <p className="text-sm leading-5 text-[color-mix(in_srgb,var(--text)_60%,transparent)]">
+              Кликните, чтобы вставить текст в поиск.
             </p>
           </div>
+          <div className="flex flex-wrap gap-2">
+            {visibleHints.map((hint) => (
+              <button
+                key={hint}
+                type="button"
+                onClick={() => handleHintClick(hint)}
+                className="inline-flex h-9 items-center rounded-full border border-[var(--muted-border)] px-4 text-sm font-medium text-[color-mix(in_srgb,var(--text)_70%,transparent)] transition hover:border-[var(--primary)] hover:text-[var(--primary)]"
+              >
+                {hint}
+              </button>
+            ))}
+          </div>
         </Card>
-      </section>
-    </div>
+      </aside>
+    </>
   );
 }
