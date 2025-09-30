@@ -47,15 +47,19 @@ export default function AppShell({ children, activeRoute, isMiniApp = false }: A
               "relative flex-1",
               isMiniApp
                 ? "px-4 pb-24 pt-4 sm:px-5"
+
                 : "px-4 pb-24 pt-6 sm:px-6 lg:px-6"
+
             )}
           >
             <div
               className={clsx(
+
                 "mx-auto flex w-full flex-col gap-6 xl:gap-8",
                 isMiniApp
                   ? "max-w-3xl gap-5"
                   : "max-w-[1280px] xl:grid xl:grid-cols-12 xl:gap-8"
+
               )}
             >
               {children}

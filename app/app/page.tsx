@@ -5,7 +5,9 @@ import Link from "next/link";
 import Card from "@/components/Card";
 import { showToast } from "@/lib/toast";
 import { trackEvent } from "@/lib/analytics";
+
 import { useAppStore } from "@/lib/store";
+
 import {
   continueItems,
   fileIcons,
@@ -14,6 +16,7 @@ import {
   pinnedRecipes,
   quickActions,
 } from "./home-data";
+
 
 export default function DashboardPage() {
   const { setPromptDraft } = useAppStore();
@@ -45,6 +48,7 @@ export default function DashboardPage() {
     return () => window.clearInterval(id);
   }, [prefersReducedMotion]);
 
+
   const visibleHints = useMemo(() => {
     if (hintPills.length <= 3) return hintPills;
     const sequence: string[] = [];
@@ -67,7 +71,9 @@ export default function DashboardPage() {
   };
 
   const handleHintClick = (text: string) => {
+
     setPromptDraft(text);
+
     showToast(`Подсказка добавлена: ${text}`);
   };
 
