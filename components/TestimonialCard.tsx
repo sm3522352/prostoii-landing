@@ -17,7 +17,7 @@ export default function TestimonialCard({ id, name, role, rating, before, after,
   const stars = Array.from({ length: 5 }, (_, index) => (index < rating ? "★" : "☆")).join("");
 
   return (
-    <Card className={clsx("min-w-[280px] snap-center scroll-ml-6 rounded-[20px] border border-neutral-200/60 bg-white p-6 lg:min-w-[320px]", className)}>
+    <Card className={clsx("min-w-[280px] snap-center scroll-ml-6 rounded-[20px] border border-neutral-200/60 bg-white lg:min-w-[320px]", className)}>
       <div className="flex items-center gap-3">
         <Image
           src={image}

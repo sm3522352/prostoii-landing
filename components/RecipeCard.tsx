@@ -16,7 +16,7 @@ export default function RecipeCard({ recipe, onLaunch, tab, variant = "default" 
     <Card className={clsx("relative h-full overflow-hidden p-0", variant === "featured" && "bg-neutral-50")}>
       <button
         type="button"
-        className="flex h-full w-full flex-col gap-4 rounded-[20px] p-6 text-left transition"
+        className="flex h-full w-full flex-col gap-4 rounded-[20px] p-5 text-left transition md:p-6"
         onClick={() => onLaunch(recipe, tab)}
         aria-label={`Запустить рецепт «${recipe.title}»`}
       >

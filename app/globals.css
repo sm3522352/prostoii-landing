@@ -23,11 +23,13 @@
   --surface: #ffffff;
   --muted: #f6f7f9;
   --muted-border: rgba(15, 18, 34, 0.08);
-  --muted-text: rgba(15, 18, 34, 0.6);
+  --muted-text: rgba(15, 18, 34, 0.68);
   --success: #10b981;
   --warning: #f59e0b;
   --error: #dc2626;
   --white: #ffffff;
+  --shadow-soft: 0 16px 40px -24px rgba(15, 18, 34, 0.16);
+  --shadow-soft-lg: 0 24px 56px -28px rgba(15, 18, 34, 0.2);
 }
 
 html,
@@ -69,6 +71,28 @@ body {
   background-color: var(--primary);
 }
 
+.bg-surface {
+  background-color: var(--surface);
+}
+
+.shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+
+.shadow-soft-lg {
+  box-shadow: var(--shadow-soft-lg);
+}
+
+.hover\:shadow-soft-lg:hover {
+  box-shadow: var(--shadow-soft-lg);
+}
+
+.section-divider {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(90deg, transparent, rgba(15, 18, 34, 0.08), transparent);
+}
+
 .container-soft {
   max-width: 1200px;
   margin: 0 auto;
@@ -105,6 +129,32 @@ body {
 .toast--visible {
   opacity: 1;
   transform: translate(-50%, -4px);
+}
+
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: reveal 0.7s ease forwards;
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .hero-surface::before {
