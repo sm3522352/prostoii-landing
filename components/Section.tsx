@@ -2,7 +2,6 @@ import { ReactNode } from "react";
 import clsx from "clsx";
 
 type SectionSpacing = "normal" | "tight";
-type SectionTone = "default" | "muted";
 
 type Props = {
   id?: string;
@@ -12,22 +11,18 @@ type Props = {
   children: ReactNode;
   className?: string;
   spacing?: SectionSpacing;
-  tone?: SectionTone;
+  tone?: "none" | "muted" | "soft";
+  bgShift?: 0 | 1 | 2 | 3 | 4;
 };
 
 const spacingClasses: Record<SectionSpacing, string> = {
-  normal: "py-14 md:py-20",
-  tight: "py-10 md:py-14"
+  normal: "py-16 lg:py-24",
+  tight: "py-12 lg:py-20"
 };
 
 const headerSpacing: Record<SectionSpacing, string> = {
   normal: "mb-12",
   tight: "mb-8"
-};
-
-const toneClasses: Record<SectionTone, string> = {
-  default: "",
-  muted: "bg-muted"
 };
 
 export default function Section({
@@ -38,10 +33,21 @@ export default function Section({
   children,
   className,
   spacing = "normal",
-  tone = "default"
+  tone = "none",
+  bgShift = 0
 }: Props) {
   return (
-    <section id={id} className={clsx(spacingClasses[spacing], toneClasses[tone], className)}>
+    <section
+      id={id}
+      className={clsx(
+        "section-wrap",
+        spacingClasses[spacing],
+        tone === "muted" && "section-muted",
+        tone === "soft" && "section-soft",
+        className
+      )}
+      data-bg-shift={bgShift}
+    >
       <div className="container-soft">
         <div className={clsx("max-w-3xl", headerSpacing[spacing])}>
           {eyebrow && <span className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">{eyebrow}</span>}
