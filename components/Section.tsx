@@ -3,6 +3,8 @@ import clsx from "clsx";
 
 type SectionSpacing = "normal" | "tight";
 
+type SectionTone = "default" | "muted" | "surface";
+
 type Props = {
   id?: string;
   title: string;
@@ -11,8 +13,7 @@ type Props = {
   children: ReactNode;
   className?: string;
   spacing?: SectionSpacing;
-  tone?: "none" | "muted" | "soft";
-  bgShift?: 0 | 1 | 2 | 3 | 4;
+  tone?: SectionTone;
 };
 
 const spacingClasses: Record<SectionSpacing, string> = {
@@ -33,8 +34,7 @@ export default function Section({
   children,
   className,
   spacing = "normal",
-  tone = "none",
-  bgShift = 0
+  tone = "default"
 }: Props) {
   return (
     <section
@@ -42,11 +42,10 @@ export default function Section({
       className={clsx(
         "section-wrap",
         spacingClasses[spacing],
-        tone === "muted" && "section-muted",
-        tone === "soft" && "section-soft",
+        tone === "muted" && "section--muted",
+        tone === "surface" && "section--surface",
         className
       )}
-      data-bg-shift={bgShift}
     >
       <div className="container-soft">
         <div className={clsx("max-w-3xl", headerSpacing[spacing])}>

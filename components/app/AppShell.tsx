@@ -29,7 +29,7 @@ export default function AppShell({ children, activeRoute, isMiniApp = false }: A
   }, [activeRoute, setSidebarOpen]);
 
   return (
-    <div className={clsx("min-h-screen", isMiniApp ? "bg-surface" : "bg-muted")}>
+    <div className="min-h-screen">
       {!isMiniApp && (
         <Sidebar
           activeRoute={activeRoute}
@@ -46,14 +46,14 @@ export default function AppShell({ children, activeRoute, isMiniApp = false }: A
             className={clsx(
               "flex-1",
               isMiniApp
-                ? "px-3 pb-6 pt-4"
-                : "px-4 pb-28 pt-6 sm:px-6 lg:px-10 lg:pb-12 lg:pt-8"
+                ? "px-3 pb-20 pt-3"
+                : "px-4 pb-24 pt-5 sm:px-8 lg:px-12 lg:pb-14 lg:pt-6"
             )}
           >
             <div
               className={clsx(
                 "mx-auto w-full",
-                isMiniApp ? "max-w-3xl space-y-5" : "max-w-6xl space-y-8 lg:space-y-10"
+                isMiniApp ? "max-w-3xl space-y-4" : "max-w-6xl space-y-6 lg:space-y-8"
               )}
             >
               {children}

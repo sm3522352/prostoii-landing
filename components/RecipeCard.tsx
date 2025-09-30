@@ -13,10 +13,15 @@ export type RecipeCardProps = {
 
 export default function RecipeCard({ recipe, onLaunch, tab, variant = "default" }: RecipeCardProps) {
   return (
-    <Card className={clsx("relative h-full overflow-hidden p-0", variant === "featured" && "bg-neutral-50")}>
+    <Card
+      className={clsx(
+        "relative h-full overflow-hidden",
+        variant === "featured" && "border-primary/30 bg-primary-50/50"
+      )}
+    >
       <button
         type="button"
-        className="flex h-full w-full flex-col gap-4 rounded-[20px] p-5 text-left transition md:p-6"
+        className="flex h-full w-full flex-col gap-4 rounded-[16px] p-4 text-left transition md:p-5"
         onClick={() => onLaunch(recipe, tab)}
         aria-label={`Запустить рецепт «${recipe.title}»`}
       >
@@ -26,7 +31,7 @@ export default function RecipeCard({ recipe, onLaunch, tab, variant = "default" 
           </span>
           <div className="space-y-2">
             <h3 className="text-lg font-semibold leading-tight text-text">{recipe.title}</h3>
-            <p className="text-sm text-muted">{recipe.description}</p>
+            <p className="text-sm leading-relaxed text-muted">{recipe.description}</p>
           </div>
         </div>
         <div className="mt-auto flex flex-wrap items-center justify-between gap-3 text-sm font-semibold text-primary">

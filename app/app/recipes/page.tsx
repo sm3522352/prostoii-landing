@@ -37,7 +37,7 @@ export default function RecipesPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <header className="scroll-reveal space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>

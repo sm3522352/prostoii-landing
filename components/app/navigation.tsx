@@ -5,23 +5,6 @@ export type IconProps = ComponentProps<"svg">;
 
 const iconBase = "h-5 w-5";
 
-export const HomeIcon = ({ className, ...props }: IconProps) => (
-  <svg
-    aria-hidden
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.8}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={clsx(iconBase, className)}
-    {...props}
-  >
-    <path d="M4 10.5 12 4l8 6.5" />
-    <path d="M6.5 9.8V20h11V9.8" />
-  </svg>
-);
-
 export const RecipesIcon = ({ className, ...props }: IconProps) => (
   <svg
     aria-hidden
@@ -111,17 +94,38 @@ export const SettingsIcon = ({ className, ...props }: IconProps) => (
   </svg>
 );
 
+export const HelpIcon = ({ className, ...props }: IconProps) => (
+  <svg
+    aria-hidden
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.8}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={clsx(iconBase, className)}
+    {...props}
+  >
+    <path d="M12 17.4v.2" />
+    <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+    <path d="M9.5 9.3a2.5 2.5 0 0 1 4.7 1 2.2 2.2 0 0 1-1 1.6c-.8.5-1.2.9-1.2 1.8v.4" />
+  </svg>
+);
+
 export type AppNavItem = {
   label: string;
   href: string;
-  icon: typeof HomeIcon;
+  icon: typeof ChatIcon;
+  bottomLabel?: string;
 };
 
 export const navigationItems: AppNavItem[] = [
-  { label: "Главная", href: "/app", icon: HomeIcon },
-  { label: "Рецепты", href: "/app/recipes", icon: RecipesIcon },
-  { label: "Чат", href: "/app/chat", icon: ChatIcon },
-  { label: "Файлы", href: "/app/files", icon: FilesIcon },
-  { label: "Команда", href: "/app/team", icon: TeamIcon },
-  { label: "Настройки", href: "/app/settings", icon: SettingsIcon },
+  { label: "Чат", bottomLabel: "Чат", href: "/app/chat", icon: ChatIcon },
+  { label: "Рецепты", bottomLabel: "Рецепты", href: "/app/recipes", icon: RecipesIcon },
+  { label: "Файлы", bottomLabel: "Файлы", href: "/app/files", icon: FilesIcon },
+  { label: "Команда", bottomLabel: "Команда", href: "/app/team", icon: TeamIcon },
+  { label: "Настройки", bottomLabel: "Ещё", href: "/app/settings", icon: SettingsIcon },
+  { label: "Помощь", href: "/app/help", icon: HelpIcon },
 ];
+
+export const bottomNavigationItems = navigationItems.slice(0, 5);

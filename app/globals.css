@@ -190,54 +190,18 @@ body {
 }
 
 /* ===== Fixed background layer ===== */
-.site-bg {
+.site-backdrop {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
   pointer-events: none;
-  background:
-    radial-gradient(
-      1200px 600px at calc(50% + var(--mesh-shift-x)) calc(10% + var(--mesh-shift-y)),
-      color-mix(in oklab, var(--primary-200), white 22%) 0%,
-      color-mix(in oklab, var(--primary-100), white 40%) 35%,
-      transparent 70%
-    ),
-    radial-gradient(
-      800px 500px at calc(20% - var(--mesh-shift-x)) calc(70% + var(--mesh-shift-y)),
-      color-mix(in oklab, var(--primary-50), white 5%) 0%,
-      transparent 60%
-    ),
-    conic-gradient(
-      from 210deg at 60% 30%,
-      color-mix(in oklab, var(--primary-300), white 30%) 0deg,
-      color-mix(in oklab, var(--primary-200), white 40%) 100deg,
-      color-mix(in oklab, var(--primary-100), white 50%) 220deg,
-      transparent 360deg
-    );
-  background-color: var(--neutral-50);
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.95) 10%, rgba(0, 0, 0, 0.9) 60%, rgba(0, 0, 0, 0.96));
-  animation: meshFloat 22s ease-in-out infinite alternate;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .site-bg {
-    animation: none;
-  }
-}
-
-@keyframes meshFloat {
-  0% {
-    --mesh-shift-x: -6%;
-    --mesh-shift-y: 0%;
-  }
-  50% {
-    --mesh-shift-x: 4%;
-    --mesh-shift-y: 3%;
-  }
-  100% {
-    --mesh-shift-x: -2%;
-    --mesh-shift-y: -2%;
-  }
+.content-layer {
+  position: relative;
+  z-index: 1;
 }
 
 /* ===== Section overlays ===== */
@@ -248,66 +212,48 @@ body {
 .section-wrap::before {
   content: "";
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100%, 1280px);
+  height: 100%;
   z-index: -1;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.35s ease;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.92));
-  mask-image:
-    radial-gradient(80% 120% at 50% -10%, rgba(0, 0, 0, 0.25), transparent 60%),
-    linear-gradient(#000, #000);
-  mask-composite: exclude;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  border-radius: clamp(28px, 6vw, 48px);
 }
 
-.section-muted::before {
-  opacity: 1;
-}
-
-.section-soft::before {
+.section--muted::before {
   opacity: 1;
   background: linear-gradient(
-    to bottom,
-    color-mix(in oklab, var(--primary-50), white 70%),
-    rgba(255, 255, 255, 0.95)
+    180deg,
+    color-mix(in srgb, var(--text) 2%, transparent) 0%,
+    color-mix(in srgb, var(--white) 60%, transparent) 100%
   );
+  border-top: 1px solid var(--muted-border);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--white) 65%, transparent),
+    0 24px 56px -48px color-mix(in srgb, var(--text) 12%, transparent);
 }
 
-.section-wrap[data-bg-shift="1"] {
-  --mesh-shift-x: 3%;
-  --mesh-shift-y: 1%;
-}
-
-.section-wrap[data-bg-shift="2"] {
-  --mesh-shift-x: -4%;
-  --mesh-shift-y: 2%;
-}
-
-.section-wrap[data-bg-shift="3"] {
-  --mesh-shift-x: 2%;
-  --mesh-shift-y: -1%;
-}
-
-.section-wrap[data-bg-shift="4"] {
-  --mesh-shift-x: -2%;
-  --mesh-shift-y: -3%;
-}
-
-/* noise glaze */
-:root[data-bgready="true"] body::after {
-  content: "";
-  position: fixed;
-  inset: -1px;
-  z-index: -1;
-  pointer-events: none;
-  background-image: var(--mesh-noise);
-  background-size: 260px 260px;
-  opacity: 0.4;
-  mix-blend-mode: soft-light;
+.section--surface::before {
+  opacity: 1;
+  background: var(--surface);
+  box-shadow: var(--shadow-soft-lg);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root[data-bgready="true"] body::after {
-    opacity: 0.25;
+  .section-wrap::before {
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none !important;
+  }
+  .card:hover {
+    transform: none !important;
   }
 }
