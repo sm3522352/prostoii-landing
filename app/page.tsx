@@ -471,11 +471,11 @@ export default function Page() {
         <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 xl:grid-cols-3">
           {featuredRecipes.map((recipe) => (
             <div key={recipe.id} className="md:col-span-2 xl:col-span-1">
-              <RecipeCard recipe={recipe} tab={activeTab} onLaunch={handleLaunchRecipe} variant="featured" />
+              <RecipeCard recipe={recipe} tab={activeTab} onOpen={handleLaunchRecipe} variant="featured" />
             </div>
           ))}
           {remainingRecipes.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} tab={activeTab} onLaunch={handleLaunchRecipe} />
+            <RecipeCard key={recipe.id} recipe={recipe} tab={activeTab} onOpen={handleLaunchRecipe} />
           ))}
           {filteredRecipes.length === 0 && (
             <Card className="col-span-full bg-white text-center">

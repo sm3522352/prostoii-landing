@@ -23,11 +23,13 @@ export default function ModelTable() {
   const autoModel = preferences.autoModel;
 
   return (
-    <Card className="overflow-hidden p-0">
+    <Card className="overflow-hidden p-0" size="lg">
       <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-5">
         <div>
-          <p className="text-sm font-semibold text-text">Подбор модели</p>
-          <p className="text-sm text-muted">Выбирайте вручную или доверьтесь автоподбору.</p>
+          <p className="text-sm font-semibold text-[var(--text)]">Подбор модели</p>
+          <p className="text-sm text-[color-mix(in_srgb,var(--text)_60%,transparent)]">
+            Выбирайте вручную или доверьтесь автоподбору.
+          </p>
         </div>
         <button
           type="button"
@@ -36,22 +38,25 @@ export default function ModelTable() {
           onClick={() => setAutoModel(!autoModel)}
           className={clsx(
             "flex items-center gap-3 rounded-full border px-4 py-2 text-sm font-semibold transition",
-            autoModel ? "border-success text-success" : "border-neutral-200 text-muted"
+            autoModel
+              ? "border-[color-mix(in_srgb,var(--success)_55%,transparent)] text-[var(--success)]"
+              : "border-[var(--muted-border)] text-[color-mix(in_srgb,var(--text)_65%,transparent)]"
           )}
           title="Подбираем лучший вариант под задачу. Можно отключить."
         >
           Автовыбор модели — {autoModel ? "Включён" : "Выключен"}
           <span
             aria-hidden
-            className="inline-flex h-6 w-11 items-center rounded-full border transition"
-            style={{
-              borderColor: autoModel ? "var(--success)" : "var(--muted-border)",
-              backgroundColor: autoModel ? "rgba(16,185,129,0.12)" : "rgba(15,18,34,0.06)"
-            }}
+            className={clsx(
+              "inline-flex h-6 w-11 items-center rounded-full border transition",
+              autoModel
+                ? "border-[color-mix(in_srgb,var(--success)_55%,transparent)] bg-[color-mix(in_srgb,var(--success)_20%,transparent)]"
+                : "border-[var(--muted-border)] bg-[color-mix(in_srgb,var(--text)_8%,transparent)]"
+            )}
           >
             <span
               className={clsx(
-                "mx-1 h-4 w-4 rounded-full bg-white shadow transition",
+                "mx-1 h-4 w-4 rounded-full bg-[var(--surface)] shadow-sm transition",
                 autoModel ? "translate-x-5" : "translate-x-0"
               )}
             />
@@ -59,17 +64,17 @@ export default function ModelTable() {
         </button>
       </div>
       <div className="max-w-full overflow-x-auto">
-        <table className="min-w-[720px] w-full border-t border-neutral-100 text-left text-sm text-text">
-          <thead className="bg-neutral-50/80">
+        <table className="min-w-[640px] w-full border-t border-[color-mix(in_srgb,var(--text)_6%,transparent)] text-left text-sm text-[var(--text)]">
+          <thead className="bg-[color-mix(in_srgb,var(--text)_4%,transparent)]">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-widest text-muted">
+              <th scope="col" className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-[0.18em] text-[color-mix(in_srgb,var(--text)_55%,transparent)]">
                 Модель
               </th>
               {headers.map((header) => (
                 <th
                   scope="col"
                   key={header}
-                  className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-widest text-muted"
+                  className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.18em] text-[color-mix(in_srgb,var(--text)_55%,transparent)]"
                   title={`${header}. Описание возможностей модели.`}
                 >
                   {header}
@@ -79,19 +84,20 @@ export default function ModelTable() {
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.name} className="border-t border-neutral-100">
-                <th scope="row" className="px-6 py-4 text-left text-sm font-semibold text-text">
+              <tr key={row.name} className="border-t border-[color-mix(in_srgb,var(--text)_6%,transparent)]">
+                <th scope="row" className="px-5 py-4 text-left text-sm font-semibold text-[var(--text)]">
                   <span>{row.name}</span>
-                  <p className="mt-1 text-xs text-muted">{row.bestFor}</p>
+                  <p className="mt-1 text-xs text-[color-mix(in_srgb,var(--text)_55%,transparent)]">{row.bestFor}</p>
                 </th>
                 {row.checks.map((check, index) => (
-                  <td key={`${row.name}-${index}`} className="px-6 py-4 text-center">
+                  <td key={`${row.name}-${index}`} className="px-4 py-4 text-center">
                     <span
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-full text-base"
-                      style={{
-                        backgroundColor: check ? "rgba(16,185,129,0.14)" : "rgba(15,18,34,0.05)",
-                        color: check ? "var(--success)" : "var(--muted-text)"
-                      }}
+                      className={clsx(
+                        "inline-flex h-8 w-8 items-center justify-center rounded-full text-base",
+                        check
+                          ? "bg-[color-mix(in_srgb,var(--success)_22%,transparent)] text-[var(--success)]"
+                          : "bg-[color-mix(in_srgb,var(--text)_8%,transparent)] text-[color-mix(in_srgb,var(--text)_55%,transparent)]"
+                      )}
                       aria-label={check ? "Подходит" : "Не специализируется"}
                     >
                       {check ? "✓" : "—"}
