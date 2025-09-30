@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
 import Section from "@/components/Section";
@@ -25,6 +26,7 @@ import {
 import { getDeviceType, setUserProps, trackEvent, trackTimeToValue } from "@/lib/analytics";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import { showToast } from "@/lib/toast";
+import { useAppStore } from "@/lib/store";
 
 const heroBadges = ["Рекомендовано учителями", "Рекомендовано менеджерами", "Рекомендовано родителями"];
 const chatChips = ["Сделай проще", "Объясни как ребёнку", "Списком", "Примеры", "Исправь ошибки"];
@@ -91,6 +93,8 @@ function useFocusTrap(isOpen: boolean, ref: RefObject<HTMLElement | null>, refre
 type OnboardingStage = 0 | 1 | 2 | 3;
 
 export default function Page() {
+  const router = useRouter();
+  const { auth } = useAppStore();
   const [activeTab, setActiveTab] = useState<RecipeCategory>("Популярные");
   const [searchValue, setSearchValue] = useState("");
   const debouncedSearch = useDebouncedValue(searchValue, 300);
@@ -254,9 +258,9 @@ export default function Page() {
   };
 
   const handleHeroCTA = () => {
-    trackEvent("hero_cta_clicked", { variant: "primary", device: getDeviceType() });
-    startOnboarding();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const target = auth.user ? "/app" : "/login";
+    trackEvent("hero_cta_clicked", { variant: "primary", device: getDeviceType(), target });
+    router.push(target);
   };
 
   const handleExamplesClick = () => {
@@ -324,8 +328,12 @@ export default function Page() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Button onClick={handleHeroCTA} aria-label="Начать бесплатно" size="lg">
-                Начать бесплатно
+              <Button
+                onClick={handleHeroCTA}
+                aria-label={auth.user ? "Перейти в дашборд" : "Начать бесплатно"}
+                size="lg"
+              >
+                {auth.user ? "Перейти в дашборд" : "Начать бесплатно"}
               </Button>
               <Button variant="link" onClick={handleExamplesClick} aria-label="Посмотреть примеры">
                 Посмотреть примеры

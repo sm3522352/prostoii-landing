@@ -80,6 +80,39 @@ const typeLabels: Record<DashboardResult["type"], string> = {
   file: "Файл",
 };
 
+const navigationTiles = [
+  {
+    id: "recipes",
+    title: "Рецепты",
+    description: "Подбор готовых сценариев и инструкций",
+    href: "/app/recipes",
+  },
+  {
+    id: "chat",
+    title: "Чат",
+    description: "Диалог с ИИ простыми словами",
+    href: "/app/chat",
+  },
+  {
+    id: "files",
+    title: "Файлы",
+    description: "Загрузки, разборы и конспекты",
+    href: "/app/files",
+  },
+  {
+    id: "team",
+    title: "Команда",
+    description: "Совместная работа и роли",
+    href: "/app/team",
+  },
+  {
+    id: "settings",
+    title: "Настройки",
+    description: "Профиль, тариф и интеграции",
+    href: "/app/settings",
+  },
+];
+
 export default function DashboardPage() {
   const router = useRouter();
   const [results, setResults] = useState(initialResults);
@@ -122,6 +155,35 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-10 lg:space-y-12">
+      <section className="scroll-reveal">
+        <div className="flex flex-col gap-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.32em] text-primary">Навигация</p>
+          <h2 className="text-xl font-semibold text-text">Быстрый переход по разделам</h2>
+        </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {navigationTiles.map((tile) => (
+            <button
+              key={tile.id}
+              type="button"
+              onClick={() => router.push(tile.href)}
+              className="group flex flex-col items-start gap-3 rounded-2xl border border-neutral-200/70 bg-white/95 px-5 py-5 text-left shadow-soft transition hover:-translate-y-0.5 hover:shadow-soft-lg"
+            >
+              <span className="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-muted">
+                Раздел
+              </span>
+              <span className="text-lg font-semibold text-text">{tile.title}</span>
+              <span className="text-sm text-muted">{tile.description}</span>
+              <span className="inline-flex items-center text-sm font-semibold text-primary">
+                Перейти
+                <span aria-hidden className="ml-1 transition group-hover:translate-x-0.5">
+                  →
+                </span>
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
+
       <section className="scroll-reveal">
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-semibold text-text">Домашняя</h1>

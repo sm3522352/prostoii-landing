@@ -27,8 +27,8 @@ const presets = [
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { auth, completeOnboarding } = useAppStore();
-  const { onboardingDone } = auth;
+  const { auth, completeOnboarding, hydrated } = useAppStore();
+  const { onboardingDone, user } = auth;
 
   const [step, setStep] = useState(0);
   const [focus, setFocus] = useState<string | null>(null);
@@ -39,6 +39,15 @@ export default function OnboardingPage() {
       router.replace("/app");
     }
   }, [onboardingDone, router]);
+
+  useEffect(() => {
+    if (!hydrated) {
+      return;
+    }
+    if (!user) {
+      router.replace("/login");
+    }
+  }, [hydrated, router, user]);
 
   const totalSteps = 3;
   const progress = useMemo(() => Math.round(((step + 1) / totalSteps) * 100), [step]);
