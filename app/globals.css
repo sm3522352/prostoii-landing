@@ -14,8 +14,18 @@
 html, body { height: 100%; }
 body { color: var(--neutral-900); background: var(--neutral-50); }
 
-.bg-warm-glow{ background: linear-gradient(180deg,#FF7A45 0%,#FFA15C 45%,#FFC58A 100%); }
-.glow-veil{ filter: blur(28px); opacity:.28; }
+.bg-warm-glow{ background: linear-gradient(180deg,#FF7A45 0%,#FFA15C 45%,#FFC58A 100%); opacity:0.3; filter: blur(48px); }
+.glow-veil{ opacity:.35; }
+
+.btn-glow{
+  box-shadow: 0 8px 24px -8px rgba(27,33,53,.18), inset 0 1px 0 rgba(255,255,255,.32);
+}
+.btn-glow:hover{
+  box-shadow: 0 16px 36px -14px rgba(27,33,53,.2), inset 0 1px 0 rgba(255,255,255,.32);
+}
+.btn-glow:focus-visible{
+  box-shadow: 0 16px 36px -14px rgba(27,33,53,.24), inset 0 1px 0 rgba(255,255,255,.4);
+}
 
 /* focus styles for a11y */
 :focus-visible { outline: 2px solid var(--primary-500); outline-offset: 2px; }

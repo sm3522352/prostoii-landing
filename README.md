@@ -40,7 +40,11 @@ postcss.config.js
 - Ленивая отрисовка простая; для изображений используйте `next/image` (AVIF/WebP)
 
 ## CTA
-Кнопка ведёт на `tg://resolve?domain=prostoii_bot` (заглушка). Замените на актуальный username.
+Основной CTA ведёт на `tg://resolve?domain=your_mini_app` (заглушка). Замените на актуальный username.
+
+### Sticky CTA и аналитика
+- На мобиле включён фиксированный бар с кнопкой `Начать бесплатно` (`data-analytics="click_cta_sticky"`).
+- Основные кнопки размечены атрибутами `data-analytics`: `click_cta_primary`, `click_cta_secondary`, `click_recipe`, `click_pricing`, `click_show_more`, `faq_toggle`.
 
 ## Лицензия
 MIT

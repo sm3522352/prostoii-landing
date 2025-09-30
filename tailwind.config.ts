@@ -38,7 +38,8 @@ const config: Config = {
         pill: "999px"
       },
       boxShadow: {
-        glow: "var(--shadow-lg)"
+        glow: "var(--shadow-lg)",
+        soft: "0 32px 72px -36px rgba(27,33,53,0.28)"
       },
       maxWidth: {
         container: "1200px"

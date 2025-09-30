@@ -2,5 +2,13 @@ import { HTMLAttributes } from "react";
 import clsx from "clsx";
 
 export default function Pill({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={clsx("inline-flex items-center px-3 py-1 rounded-pill text-xs bg-primary-50 text-primary-600", className)} {...props} />;
+  return (
+    <div
+      className={clsx(
+        "inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white/70 px-4 py-1.5 text-xs font-medium text-primary-600",
+        className
+      )}
+      {...props}
+    />
+  );
 }
