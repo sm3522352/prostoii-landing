@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import Link from "next/link";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
-import { useAppStore } from "@/lib/store";
+import Button from "@/components/Button";
+import { loginMock as persistLoginMock, useAppStore } from "@/lib/store";
 import { showToast } from "@/lib/toast";
 import { trackEvent } from "@/lib/analytics";
 
@@ -28,16 +28,18 @@ declare global {
 
 export default function LoginPage() {
   const router = useRouter();
-  const { auth, setUser } = useAppStore();
+  const { auth, setAuth } = useAppStore();
   const { onboardingDone } = auth;
 
   useEffect(() => {
     window.__prostoiiTelegramAuth = (user) => {
-      setUser({
-        id: String(user.id),
-        name: [user.first_name, user.last_name].filter(Boolean).join(" ") || user.first_name,
-        username: user.username,
-        avatarUrl: user.photo_url,
+      setAuth({
+        user: {
+          id: String(user.id),
+          name: [user.first_name, user.last_name].filter(Boolean).join(" ") || user.first_name,
+          username: user.username,
+          avatarUrl: user.photo_url,
+        },
       });
       trackEvent("login_success", { user_id: user.id });
       showToast("Готово. Мы никому ничего не публикуем.");
@@ -48,7 +50,14 @@ export default function LoginPage() {
     return () => {
       delete window.__prostoiiTelegramAuth;
     };
-  }, [onboardingDone, router, setUser]);
+  }, [onboardingDone, router, setAuth]);
+
+  const handleMockLogin = () => {
+    const next = persistLoginMock("Demo User");
+    setAuth({ user: next.user, onboardingDone: next.onboardingDone });
+    const nextRoute = next.onboardingDone ? "/app" : "/onboarding";
+    router.push(nextRoute);
+  };
 
   return (
     <main className="min-h-screen bg-surface">
@@ -58,7 +67,8 @@ export default function LoginPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.32em] text-primary">ПростоИИ</p>
             <h1 className="mt-3 text-3xl font-semibold text-text">Войдите через Telegram</h1>
             <p className="mt-3 text-sm text-muted">
-              Мы используем Telegram только для авторизации. Ничего не публикуем и не пишем вашим контактам.
+              Мы используем Telegram только для авторизации. Ничего не публикуем и не пишем вашим контактам. В
+              разработке можно войти без Telegram.
             </p>
           </div>
           <div className="flex flex-col gap-4">
@@ -75,17 +85,14 @@ export default function LoginPage() {
                 />
               </div>
             </div>
-            <Link
-              href={`https://t.me/${TELEGRAM_BOT}?start=webapp`}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:bg-primary/90"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Открыть в Telegram
-              <span aria-hidden>↗</span>
-            </Link>
+            <Button as="a" href={`https://t.me/${TELEGRAM_BOT}?start=webapp`} target="_blank" rel="noreferrer">
+              Открыть в Telegram ↗
+            </Button>
+            <Button onClick={handleMockLogin} variant="secondary">
+              Войти без Telegram (dev)
+            </Button>
             <p className="text-center text-xs text-muted">
-              Если кнопка выше не работает, откройте @prostoii_bot и нажмите «Открыть веб-версию».
+              Ничего не публикуем. Данные шифруются. В разработке доступен мок-вход без Telegram.
             </p>
           </div>
         </div>
