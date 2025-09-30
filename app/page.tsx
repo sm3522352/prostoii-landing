@@ -356,6 +356,7 @@ export default function Page() {
           </div>
           <Card className="relative overflow-hidden border border-white/60 bg-white/90 shadow-[0_24px_60px_-36px_rgba(15,18,34,0.3)]">
             <div className="space-y-5">
+
               <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.2em] text-muted">
                 <span>Рецепт</span>
                 <span className="text-success">Готово на 100%</span>
@@ -639,7 +640,7 @@ export default function Page() {
       <Section id="testimonials" title="Отзывы" subtitle="До и после — коротко и по делу." spacing="tight" tone="muted">
         <div className="flex flex-col gap-4">
           <div className="text-sm font-semibold text-muted">★ 4,8 (за 30 дней)</div>
-          <div className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-4" role="region" aria-label="Истории пользователей">
+          <div className="-mx-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-4" role="region" aria-label="Истории пользователей">
             {testimonials.map((testimonial) => (
               <TestimonialCard key={testimonial.id} {...testimonial} />
             ))}
@@ -656,9 +657,7 @@ export default function Page() {
           </button>
         </div>
       </Section>
-
       <div className="section-divider my-8 md:my-10" />
-
       <Section id="faq" title="FAQ" subtitle="Ответы на самые частые вопросы." spacing="tight">
         <div className="grid gap-4 md:grid-cols-2 md:gap-5">
           {faqs.map((faq) => (
