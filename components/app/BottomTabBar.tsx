@@ -16,7 +16,9 @@ export default function BottomTabBar({ activeRoute, isMiniApp = false }: BottomT
     <nav
       aria-label="Нижняя навигация"
       className={clsx(
-        "fixed inset-x-0 bottom-0 z-30 border-t border-[color-mix(in_srgb,var(--text)_7%,transparent)] bg-[rgba(255,255,255,0.6)] backdrop-blur-[4px] lg:hidden",
+
+        "fixed inset-x-0 bottom-0 z-30 border-t border-[color-mix(in_srgb,var(--text)_7%,transparent)] bg-[color-mix(in_srgb,var(--white)_60%,transparent)] backdrop-blur-[4px] motion-reduce:backdrop-blur-none lg:hidden",
+
         isMiniApp ? "py-2" : "py-3"
       )}
     >

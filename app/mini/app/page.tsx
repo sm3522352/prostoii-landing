@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import Card from "@/components/Card";
 import { showToast } from "@/lib/toast";
+
+import { useAppStore } from "@/lib/store";
+
 import {
   continueItems,
   fileIcons,
@@ -14,14 +17,36 @@ import {
 } from "@/app/app/home-data";
 
 export default function MiniDashboardPage() {
+
+  const { setPromptDraft } = useAppStore();
   const [activeHint, setActiveHint] = useState(0);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updatePreference = () => setPrefersReducedMotion(mediaQuery.matches);
+
+    updatePreference();
+    mediaQuery.addEventListener("change", updatePreference);
+
+    return () => {
+      mediaQuery.removeEventListener("change", updatePreference);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setActiveHint(0);
+      return undefined;
+    }
+
     const id = window.setInterval(() => {
       setActiveHint((index) => (index + 1) % hintPills.length);
     }, 6000);
+
     return () => window.clearInterval(id);
-  }, []);
+  }, [prefersReducedMotion]);
+
 
   const visibleHints = useMemo(() => {
     if (hintPills.length <= 2) return hintPills;
@@ -33,6 +58,9 @@ export default function MiniDashboardPage() {
   }, [activeHint]);
 
   const handleHintClick = (text: string) => {
+
+    setPromptDraft(text);
+
     showToast(`Подсказка добавлена: ${text}`);
   };
 

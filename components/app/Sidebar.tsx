@@ -130,13 +130,17 @@ export default function Sidebar({ activeRoute, variant, isOpen = false, onClose 
           role="presentation"
           onClick={onClose}
           className={clsx(
-            "fixed inset-0 z-40 bg-[color-mix(in_srgb,var(--text)_55%,transparent)] backdrop-blur-sm transition-opacity duration-200 lg:hidden",
+
+            "fixed inset-0 z-40 bg-[color-mix(in_srgb,var(--text)_55%,transparent)] backdrop-blur-sm motion-reduce:backdrop-blur-none transition-opacity duration-200 lg:hidden",
+
             isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
           )}
         />
         <aside
           className={clsx(
-            "fixed inset-y-0 left-0 z-50 w-[240px] overflow-hidden bg-[rgba(255,255,255,0.6)] px-4 pb-6 pt-6 shadow-[0_24px_56px_rgba(15,18,34,0.18)] backdrop-blur-[4px] transition-transform duration-200 lg:hidden",
+
+            "fixed inset-y-0 left-0 z-50 w-[240px] overflow-hidden bg-[color-mix(in_srgb,var(--white)_60%,transparent)] px-4 pb-6 pt-6 shadow-[0_18px_48px_color-mix(in_srgb,var(--text)_14%,transparent)] backdrop-blur-[4px] motion-reduce:backdrop-blur-none transition-transform duration-200 lg:hidden",
+
             isOpen ? "translate-x-0" : "-translate-x-full"
           )}
           aria-label="Меню приложения"
@@ -172,7 +176,8 @@ export default function Sidebar({ activeRoute, variant, isOpen = false, onClose 
 
   return (
     <aside
-      className="group/sidebar relative hidden h-screen w-20 shrink-0 overflow-hidden border-r border-[color-mix(in_srgb,var(--text)_6%,transparent)] bg-[rgba(255,255,255,0.6)] px-2 pb-8 pt-6 text-[color-mix(in_srgb,var(--text)_68%,transparent)] transition-[width] duration-200 ease-out backdrop-blur-[4px] lg:flex lg:hover:w-[240px] lg:focus-within:w-[240px]"
+      className="group/sidebar relative hidden h-screen w-20 shrink-0 overflow-hidden border-r border-[color-mix(in_srgb,var(--text)_6%,transparent)] bg-[color-mix(in_srgb,var(--white)_60%,transparent)] px-2 pb-8 pt-6 text-[color-mix(in_srgb,var(--text)_68%,transparent)] transition-[width] duration-200 ease-out backdrop-blur-[4px] motion-reduce:backdrop-blur-none lg:flex lg:hover:w-[240px] lg:focus-within:w-[240px]"
+
       aria-label="Меню приложения"
     >
       <div className="flex w-[240px] flex-col">

@@ -83,6 +83,7 @@ type AppStore = {
   auth: AuthState;
   ui: {
     sidebarOpen: boolean;
+    promptDraft: string;
   };
   preferences: {
     autoModel: boolean;
@@ -95,6 +96,7 @@ type AppStore = {
   setIsMiniApp: (value: boolean) => void;
   setSidebarOpen: (value: boolean) => void;
   toggleSidebar: () => void;
+  setPromptDraft: (value: string | ((prev: string) => string)) => void;
   setAutoModel: (value: boolean) => void;
   loginMock: (name?: string) => void;
   logout: () => void;
@@ -108,6 +110,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     ...loadAuth(),
   }));
   const [sidebarOpen, setSidebarOpenState] = useState(false);
+  const [promptDraft, setPromptDraftState] = useState("");
   const [autoModel, setAutoModelState] = useState(true);
   const [hydrated, setHydrated] = useState(false);
 
@@ -169,6 +172,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       auth,
       ui: {
         sidebarOpen,
+        promptDraft,
       },
       preferences: {
         autoModel,
@@ -181,6 +185,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       setIsMiniApp: handleSetIsMiniApp,
       setSidebarOpen: handleSetSidebarOpen,
       toggleSidebar: handleToggleSidebar,
+      setPromptDraft: setPromptDraftState,
       setAutoModel: handleSetAutoModel,
       loginMock: (name?: string) => {
         const next = loginMock(name);
@@ -202,6 +207,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       handleToggleSidebar,
       sidebarOpen,
       hydrated,
+      promptDraft,
     ]
   );
 

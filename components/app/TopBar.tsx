@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useMemo, useState } from "react";
+import { ChangeEvent, useMemo } from "react";
 import { useAppStore } from "@/lib/store";
 
 type TopBarProps = {
@@ -13,8 +13,9 @@ const QUICK_ACTIONS = ["Сделай проще", "Объясни как реб�
 export default function TopBar({ onMenuToggle, isMiniApp = false }: TopBarProps) {
   const {
     auth: { user },
+    ui: { promptDraft },
+    setPromptDraft,
   } = useAppStore();
-  const [query, setQuery] = useState("");
 
   const greeting = useMemo(() => {
     if (!user) return "ПростоИИ";
@@ -23,16 +24,18 @@ export default function TopBar({ onMenuToggle, isMiniApp = false }: TopBarProps)
   }, [user]);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setQuery(event.target.value);
+    setPromptDraft(event.target.value);
   };
 
   const handleQuickAction = (action: string) => {
-    setQuery(action);
+    setPromptDraft(action);
   };
 
   if (isMiniApp) {
     return (
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[color-mix(in_srgb,var(--text)_7%,transparent)] bg-[rgba(255,255,255,0.6)] px-4 py-3 text-sm font-semibold text-[var(--text)] backdrop-blur-[4px]">
+
+      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[color-mix(in_srgb,var(--text)_7%,transparent)] bg-[color-mix(in_srgb,var(--white)_60%,transparent)] px-4 py-3 text-sm font-semibold text-[var(--text)] backdrop-blur-[4px] motion-reduce:backdrop-blur-none">
+
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] text-[var(--primary)]">
             {user?.name?.charAt(0).toUpperCase() ?? "П"}
@@ -51,7 +54,9 @@ export default function TopBar({ onMenuToggle, isMiniApp = false }: TopBarProps)
   }
 
   return (
-    <header className="sticky top-0 z-30 flex w-full flex-wrap items-center gap-3 border-b border-[color-mix(in_srgb,var(--text)_7%,transparent)] bg-[rgba(255,255,255,0.6)] px-4 py-4 backdrop-blur-[4px] sm:px-6 lg:px-8">
+
+    <header className="sticky top-0 z-30 flex w-full flex-wrap items-center gap-3 border-b border-[color-mix(in_srgb,var(--text)_7%,transparent)] bg-[color-mix(in_srgb,var(--white)_60%,transparent)] px-4 py-4 backdrop-blur-[4px] motion-reduce:backdrop-blur-none sm:px-6 lg:px-6">
+
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <button
           type="button"
@@ -67,7 +72,7 @@ export default function TopBar({ onMenuToggle, isMiniApp = false }: TopBarProps)
               🔍
             </span>
             <input
-              value={query}
+              value={promptDraft}
               onChange={handleChange}
               type="search"
               placeholder="Спросите или найдите"

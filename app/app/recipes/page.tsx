@@ -144,8 +144,13 @@ export default function RecipesPage() {
       </div>
 
       {drawerOpen && selectedRecipe && (
-        <div className="fixed inset-0 z-40 flex justify-end bg-[color-mix(in_srgb,var(--text)_60%,transparent)]/40">
-          <div className="h-full w-full max-w-md bg-[var(--surface)] px-6 py-6 shadow-[0_24px_64px_rgba(15,18,34,0.18)]">
+
+        <div
+          className="fixed inset-0 z-40 flex justify-end"
+          style={{ background: "color-mix(in srgb, var(--text) 45%, transparent)" }}
+        >
+          <div className="h-full w-full max-w-md border-l border-[var(--muted-border)] bg-[var(--surface)] px-6 py-6 shadow-[0_16px_48px_color-mix(in_srgb,var(--text)_14%,transparent)]">
+
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-[20px] font-semibold leading-6 text-[var(--text)]">{selectedRecipe.title}</h2>
