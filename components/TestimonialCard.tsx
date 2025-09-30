@@ -19,7 +19,15 @@ export default function TestimonialCard({ id, name, role, rating, before, after,
   return (
     <Card className={clsx("min-w-[280px] snap-center scroll-ml-6 rounded-[20px] border border-neutral-200/60 bg-white p-6 lg:min-w-[320px]", className)}>
       <div className="flex items-center gap-3">
-        <Image src={image} alt={`Фото ${name}`} width={64} height={64} loading="lazy" className="h-16 w-16 rounded-full object-cover" />
+        <Image
+          src={image}
+          alt={`Фото ${name}`}
+          width={64}
+          height={64}
+          sizes="64px"
+          loading="lazy"
+          className="h-16 w-16 rounded-full object-cover"
+        />
         <div>
           <div className="flex flex-wrap items-center gap-1 text-sm font-semibold text-text">
             <span>{name}</span>

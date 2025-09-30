@@ -13,6 +13,7 @@ import ModelTable from "@/components/ModelTable";
 import {
   type Recipe,
   type RecipeCategory,
+  type Testimonial,
   recipeTabs,
   recipes,
   howSteps,
@@ -51,6 +52,7 @@ export default function Page() {
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [comparisonOpen, setComparisonOpen] = useState(false);
   const [reviewsModalOpen, setReviewsModalOpen] = useState(false);
+  const [fullReviews, setFullReviews] = useState<Testimonial[]>([]);
   const [reviewsPage, setReviewsPage] = useState(1);
   const [demoResultReady, setDemoResultReady] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
@@ -102,20 +104,36 @@ export default function Page() {
   const featuredRecipes = filteredRecipes.slice(0, 4);
   const remainingRecipes = filteredRecipes.slice(4);
 
-  const fullReviews = useMemo(() => {
-    const total = 112;
-    return Array.from({ length: total }, (_, index) => {
-      const base = testimonials[index % testimonials.length];
-      return {
-        ...base,
-        id: `${base.id}-${index + 1}`
-      };
+  useEffect(() => {
+    if (!reviewsModalOpen) {
+      return;
+    }
+
+    setFullReviews((current) => {
+      if (current.length > 0) {
+        return current;
+      }
+
+      const total = 112;
+      return Array.from({ length: total }, (_, index) => {
+        const base = testimonials[index % testimonials.length];
+        return {
+          ...base,
+          id: `${base.id}-${index + 1}`
+        };
+      });
     });
-  }, []);
+  }, [reviewsModalOpen]);
 
   const reviewsPerPage = 12;
-  const totalReviewPages = Math.ceil(fullReviews.length / reviewsPerPage);
-  const paginatedReviews = fullReviews.slice((reviewsPage - 1) * reviewsPerPage, reviewsPage * reviewsPerPage);
+  const totalReviewPages = fullReviews.length > 0 ? Math.ceil(fullReviews.length / reviewsPerPage) : 1;
+  const paginatedReviews = useMemo(() => {
+    if (fullReviews.length === 0) {
+      return [];
+    }
+    const start = (reviewsPage - 1) * reviewsPerPage;
+    return fullReviews.slice(start, start + reviewsPerPage);
+  }, [fullReviews, reviewsPage, reviewsPerPage]);
 
   const startOnboarding = () => {
     onboardingTimers.current.forEach((timer) => window.clearTimeout(timer));
@@ -202,17 +220,14 @@ export default function Page() {
 
   return (
     <main className="pb-24 md:pb-0">
-      <section id="hero" className="relative overflow-hidden pb-16 pt-24 lg:pt-28">
-        <div className="absolute inset-x-0 top-0 -z-10 flex justify-center">
-          <div className="hero-glow h-[420px] w-[720px] rounded-full" aria-hidden />
-        </div>
+      <section id="hero" className="hero-surface relative overflow-hidden pb-16 pt-24 lg:pt-28">
         <div className="container-soft grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]">
           <div className="space-y-6">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-primary">
               Понятный помощник
             </span>
             <div>
-              <h1 className="text-[44px] font-semibold leading-[1.15] text-text" style={{ fontFamily: "var(--font-jost)" }}>
+              <h1 className="font-heading text-[44px] font-semibold leading-[1.15] text-text">
                 Понятный ИИ. Готовый результат за 60 секунд.
               </h1>
               <p className="mt-4 text-lg leading-relaxed text-muted">
@@ -308,7 +323,9 @@ export default function Page() {
                 alt={step.title}
                 width={360}
                 height={220}
+                sizes="(min-width: 1024px) 360px, (min-width: 768px) 50vw, 100vw"
                 className="h-48 w-full rounded-t-[20px] object-cover"
+                loading="lazy"
               />
               <div className="space-y-2 p-6">
                 <h3 className="text-lg font-semibold text-text">{step.title}</h3>

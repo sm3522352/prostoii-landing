@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Jost, Manrope } from "next/font/google";
+import Script from "next/script";
 import Button from "@/components/Button";
 import { AppStateProvider } from "@/lib/store";
-
-const jost = Jost({ subsets: ["latin", "cyrillic"], weight: ["400", "600"], variable: "--font-jost" });
-const manrope = Manrope({ subsets: ["latin", "cyrillic"], weight: ["400", "600"], variable: "--font-manrope" });
+import { jost, manrope } from "./fonts";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://prostoii.ru"),
@@ -77,7 +75,7 @@ const schema = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru">
-      <body className={`${jost.variable} ${manrope.variable} antialiased`} style={{ fontFamily: "var(--font-manrope)" }}>
+      <body className={`${jost.variable} ${manrope.variable} antialiased`}>
         <AppStateProvider>
           {children}
           <div className="fixed inset-x-0 bottom-0 z-40 bg-white/95 backdrop-blur-lg shadow-[0_-20px_40px_-32px_rgba(15,18,34,0.45)] md:hidden">
@@ -89,8 +87,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
           <div id="toast" className="toast" aria-live="polite" aria-atomic="true" />
         </AppStateProvider>
-        <script
+        <Script
+          id="prostoii-ld"
           type="application/ld+json"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
         />
       </body>
