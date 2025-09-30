@@ -6,45 +6,52 @@ import { RecipeCategory, type Recipe } from "@/lib/data";
 
 export type RecipeCardProps = {
   recipe: Recipe;
-  onLaunch: (recipe: Recipe, tab: RecipeCategory | "Все") => void;
+  onOpen: (recipe: Recipe, tab: RecipeCategory | "Все") => void;
   tab: RecipeCategory | "Все";
   variant?: "default" | "featured";
 };
 
-export default function RecipeCard({ recipe, onLaunch, tab, variant = "default" }: RecipeCardProps) {
+export default function RecipeCard({ recipe, onOpen, tab, variant = "default" }: RecipeCardProps) {
   return (
     <Card
+      size="md"
+      interactive
       className={clsx(
         "relative h-full overflow-hidden",
-        variant === "featured" && "border-primary/30 bg-primary-50/50"
+        variant === "featured" && "border-[color-mix(in_srgb,var(--primary)_32%,transparent)] bg-[color-mix(in_srgb,var(--primary)_8%,transparent)]"
       )}
     >
       <button
         type="button"
-        className="flex h-full w-full flex-col gap-4 rounded-[16px] p-4 text-left transition md:p-5"
-        onClick={() => onLaunch(recipe, tab)}
+        className="flex h-full w-full flex-col gap-4 text-left"
+        onClick={() => onOpen(recipe, tab)}
         aria-label={`Запустить рецепт «${recipe.title}»`}
       >
         <div className="flex items-start gap-3">
-          <span aria-hidden className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-50 text-xl">
+          <span
+            aria-hidden
+            className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] text-xl"
+          >
             {recipe.icon}
           </span>
           <div className="space-y-2">
-            <h3 className="text-lg font-semibold leading-tight text-text">{recipe.title}</h3>
-            <p className="text-sm leading-relaxed text-muted">{recipe.description}</p>
+            <h3 className="text-[18px] font-semibold leading-6 text-[var(--text)]">{recipe.title}</h3>
+            <p className="line-clamp-3 text-sm leading-5 text-[color-mix(in_srgb,var(--text)_60%,transparent)]">
+              {recipe.description}
+            </p>
           </div>
         </div>
-        <div className="mt-auto flex flex-wrap items-center justify-between gap-3 text-sm font-semibold text-primary">
-          <span className="inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-3 text-sm font-semibold text-[var(--primary)]">
+          <span className="inline-flex items-center gap-2 rounded-full bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--primary)]">
             ≈60 сек
           </span>
-          <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary">
+          <span className="inline-flex items-center gap-1 text-sm font-semibold text-[var(--primary)]">
             Запустить
             <span aria-hidden>→</span>
           </span>
         </div>
         {recipe.disclaimer && (
-          <p className="mt-2 text-xs text-warning" role="note">
+          <p className="mt-2 text-xs text-[var(--warning)]" role="note">
             {recipe.disclaimer}
           </p>
         )}
