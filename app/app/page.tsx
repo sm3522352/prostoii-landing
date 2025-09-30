@@ -154,7 +154,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-10 lg:space-y-12">
+    <div className="space-y-6 lg:space-y-8">
       <section className="scroll-reveal">
         <div className="flex flex-col gap-2">
           <p className="text-xs font-semibold uppercase tracking-[0.32em] text-primary">Навигация</p>
@@ -191,7 +191,7 @@ export default function DashboardPage() {
             Начните с быстрого действия, посмотрите последние ответы или обновите тариф.
           </p>
         </div>
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
           {quickActions.map((action) => (
             <button
               key={action.id}

@@ -3,6 +3,7 @@
 import { ReactNode, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import AppShell from "@/components/app/AppShell";
+import LavaBackdrop from "@/components/Backdrop/LavaBackdrop";
 import { useAppStore } from "@/lib/store";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
@@ -23,5 +24,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     return null;
   }
 
-  return <AppShell activeRoute={pathname}>{children}</AppShell>;
+  return (
+    <>
+      <LavaBackdrop />
+      <div className="content-layer">
+        <AppShell activeRoute={pathname}>{children}</AppShell>
+      </div>
+    </>
+  );
 }

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Script from "next/script";
 import Button from "@/components/Button";
-import GlobalBackground from "@/components/GlobalBackground";
+import LavaBackdrop from "@/components/Backdrop/LavaBackdrop";
 import { AppStateProvider } from "@/lib/store";
 import { jost, manrope } from "./fonts";
 
@@ -77,18 +77,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ru">
       <body className={`${jost.variable} ${manrope.variable} antialiased`}>
-        <GlobalBackground />
-        <AppStateProvider>
-          {children}
-          <div className="fixed inset-x-0 bottom-0 z-40 bg-white/95 backdrop-blur-lg shadow-[0_-20px_40px_-32px_rgba(15,18,34,0.45)] md:hidden">
-            <div className="container-soft py-3">
-              <Button as="a" href="#hero" className="w-full" aria-label="Начать бесплатно">
-                Начать бесплатно
-              </Button>
+        <LavaBackdrop />
+        <div className="content-layer">
+          <AppStateProvider>
+            {children}
+            <div className="fixed inset-x-0 bottom-0 z-40 bg-white/95 backdrop-blur-lg shadow-[0_-20px_40px_-32px_rgba(15,18,34,0.45)] md:hidden">
+              <div className="container-soft py-3">
+                <Button as="a" href="#hero" className="w-full" aria-label="Начать бесплатно">
+                  Начать бесплатно
+                </Button>
+              </div>
             </div>
-          </div>
-          <div id="toast" className="toast" role="status" aria-live="polite" aria-atomic="true" />
-        </AppStateProvider>
+            <div id="toast" className="toast" role="status" aria-live="polite" aria-atomic="true" />
+          </AppStateProvider>
+        </div>
         <Script
           id="prostoii-ld"
           type="application/ld+json"

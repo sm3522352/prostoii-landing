@@ -413,8 +413,7 @@ export default function Page() {
         title="Готовые рецепты"
         subtitle="Начните с простого — так быстрее получается."
         spacing="tight"
-        tone="none"
-        bgShift={2}
+        tone="surface"
         className="mt-4 md:mt-0"
       >
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -495,7 +494,6 @@ export default function Page() {
         subtitle="Можно говорить голосом или писать текстом."
         spacing="tight"
         tone="muted"
-        bgShift={3}
       >
         <Card className="space-y-5">
           <div className="flex items-center gap-3 rounded-[20px] border border-neutral-200 bg-white px-4 py-5">
@@ -534,8 +532,7 @@ export default function Page() {
         id="models"
         title="Понятные модели — без жаргона"
         subtitle="Если не хотите выбирать — мы сделаем это за вас."
-        tone="none"
-        bgShift={0}
+        tone="surface"
       >
         <ModelTable />
       </Section>
@@ -545,8 +542,7 @@ export default function Page() {
         title="Приватность"
         subtitle="Вы решаете, что хранить."
         spacing="tight"
-        tone="soft"
-        bgShift={4}
+        tone="muted"
       >
         <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-muted">
           <span aria-hidden>🛡️</span>
@@ -577,8 +573,7 @@ export default function Page() {
         id="pricing"
         title="Тарифы"
         subtitle="Оплата картой, СБП и МИР. Отмена — в один клик."
-        tone="none"
-        bgShift={2}
+        tone="surface"
       >
         <div className="grid gap-4 md:grid-cols-3 md:gap-5">
           {plans.map((plan) => (
@@ -635,7 +630,6 @@ export default function Page() {
         subtitle="До и после — коротко и по делу."
         spacing="tight"
         tone="muted"
-        bgShift={1}
       >
         <div className="flex flex-col gap-4">
           <div className="text-sm font-semibold text-muted">★ 4,8 (за 30 дней)</div>
@@ -663,8 +657,7 @@ export default function Page() {
         title="FAQ"
         subtitle="Ответы на самые частые вопросы."
         spacing="tight"
-        tone="none"
-        bgShift={0}
+        tone="surface"
       >
         <div className="grid gap-4 md:grid-cols-2 md:gap-5">
           {faqs.map((faq) => (

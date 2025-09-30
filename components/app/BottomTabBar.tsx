@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import clsx from "clsx";
-import { navigationItems } from "./navigation";
+import { bottomNavigationItems } from "./navigation";
 
 type BottomTabBarProps = {
   activeRoute: string;
@@ -10,15 +10,18 @@ type BottomTabBarProps = {
 };
 
 export default function BottomTabBar({ activeRoute, isMiniApp = false }: BottomTabBarProps) {
-  if (isMiniApp) return null;
+  const items = bottomNavigationItems;
 
   return (
     <nav
       aria-label="Нижняя навигация"
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-neutral-200/70 bg-white/95 backdrop-blur lg:hidden"
+      className={clsx(
+        "fixed inset-x-0 bottom-0 z-30 border-t border-neutral-200/70 bg-white/95 backdrop-blur lg:hidden",
+        isMiniApp ? "py-1" : "py-2"
+      )}
     >
-      <ul className="mx-auto flex max-w-md items-stretch justify-between px-4 py-2">
-        {navigationItems.map((item) => {
+      <ul className="mx-auto flex max-w-lg items-stretch justify-between px-4">
+        {items.map((item) => {
           const isActive = activeRoute.startsWith(item.href);
           const ItemIcon = item.icon;
           return (
@@ -34,7 +37,7 @@ export default function BottomTabBar({ activeRoute, isMiniApp = false }: BottomT
                 <ItemIcon className={clsx("h-5 w-5", isActive ? "text-primary" : "text-muted")}
                   focusable="false"
                 />
-                <span>{item.label}</span>
+                <span>{item.bottomLabel ?? item.label}</span>
               </Link>
             </li>
           );

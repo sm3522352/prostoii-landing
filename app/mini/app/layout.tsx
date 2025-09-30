@@ -3,6 +3,7 @@
 import { ReactNode, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import AppShell from "@/components/app/AppShell";
+import LavaBackdrop from "@/components/Backdrop/LavaBackdrop";
 import { applyTelegramTheme, initTelegram, onTelegramEvent } from "@/lib/telegram";
 import { useAppStore } from "@/lib/store";
 
@@ -35,8 +36,13 @@ export default function MiniAppLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AppShell activeRoute={activeRoute.startsWith("/app") ? activeRoute : `/app${activeRoute}`} isMiniApp>
-      {children}
-    </AppShell>
+    <>
+      <LavaBackdrop />
+      <div className="content-layer">
+        <AppShell activeRoute={activeRoute.startsWith("/app") ? activeRoute : `/app${activeRoute}`} isMiniApp>
+          {children}
+        </AppShell>
+      </div>
+    </>
   );
 }
