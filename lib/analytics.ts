@@ -22,7 +22,14 @@ type AnalyticsEvent =
   | "paywall_viewed"
   | "plan_selected"
   | "faq_opened"
-  | "review_submitted";
+  | "review_submitted"
+  | "login_success"
+  | "onboarding_step"
+  | "recipe_launch"
+  | "chat_send"
+  | "file_upload"
+  | "plan_upgrade"
+  | "privacy_change";
 
 const userProps: UserProps = {};
 

@@ -24,6 +24,7 @@ import {
 } from "@/lib/data";
 import { getDeviceType, setUserProps, trackEvent, trackTimeToValue } from "@/lib/analytics";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
+import { showToast } from "@/lib/toast";
 
 const heroBadges = ["Рекомендовано учителями", "Рекомендовано менеджерами", "Рекомендовано родителями"];
 const chatChips = ["Сделай проще", "Объясни как ребёнку", "Списком", "Примеры", "Исправь ошибки"];
@@ -85,17 +86,6 @@ function useFocusTrap(isOpen: boolean, ref: RefObject<HTMLElement | null>, refre
       node.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, ref, refreshKey]);
-}
-
-function showToast(message: string) {
-  const el = document.getElementById("toast");
-  if (!el) return;
-  el.textContent = message;
-  el.classList.add("toast--visible");
-  window.clearTimeout((el as unknown as { timeout?: number }).timeout);
-  (el as unknown as { timeout?: number }).timeout = window.setTimeout(() => {
-    el.classList.remove("toast--visible");
-  }, 2400);
 }
 
 type OnboardingStage = 0 | 1 | 2 | 3;
@@ -356,7 +346,6 @@ export default function Page() {
           </div>
           <Card className="relative overflow-hidden border border-white/60 bg-white/90 shadow-[0_24px_60px_-36px_rgba(15,18,34,0.3)]">
             <div className="space-y-5">
-
               <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.2em] text-muted">
                 <span>Рецепт</span>
                 <span className="text-success">Готово на 100%</span>
@@ -658,6 +647,7 @@ export default function Page() {
         </div>
       </Section>
       <div className="section-divider my-8 md:my-10" />
+
       <Section id="faq" title="FAQ" subtitle="Ответы на самые частые вопросы." spacing="tight">
         <div className="grid gap-4 md:grid-cols-2 md:gap-5">
           {faqs.map((faq) => (

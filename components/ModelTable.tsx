@@ -19,7 +19,8 @@ const rows = [
 ];
 
 export default function ModelTable() {
-  const { autoModel, setAutoModel } = useAppStore();
+  const { preferences, setAutoModel } = useAppStore();
+  const autoModel = preferences.autoModel;
 
   return (
     <Card className="overflow-hidden p-0">
