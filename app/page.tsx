@@ -220,8 +220,8 @@ export default function Page() {
 
   return (
     <main className="pb-24 md:pb-0">
-      <section id="hero" className="hero-surface relative overflow-hidden pb-16 pt-24 lg:pt-28">
-        <div className="container-soft grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]">
+      <section id="hero" className="hero-surface relative overflow-hidden pb-12 pt-20 md:pb-16 md:pt-24">
+        <div className="container-soft grid items-center gap-10 md:gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]">
           <div className="space-y-6">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-primary">
               Понятный помощник
@@ -255,7 +255,7 @@ export default function Page() {
               ))}
             </div>
           </div>
-          <Card className="relative overflow-hidden border border-white/60 bg-white/90 p-0 shadow-[0_32px_80px_-44px_rgba(15,18,34,0.6)]">
+          <Card className="relative overflow-hidden border border-white/60 bg-white/90 p-0 shadow-[0_24px_60px_-36px_rgba(15,18,34,0.3)]">
             <div className="space-y-5 p-6">
               <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.2em] text-muted">
                 <span>Рецепт</span>
@@ -315,7 +315,7 @@ export default function Page() {
         title="Как это работает"
         subtitle="Три понятных шага — и всё готово."
       >
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-3">
           {howSteps.map((step) => (
             <Card key={step.id} className="flex flex-col gap-4 p-0">
               <Image
@@ -342,8 +342,8 @@ export default function Page() {
         </div>
       </Section>
 
-      <Section id="recipes" title="Готовые рецепты" subtitle="Начните с простого — так быстрее получается.">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <Section id="recipes" title="Готовые рецепты" subtitle="Начните с простого — так быстрее получается." spacing="tight">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="w-full max-w-xl">
             <label htmlFor="recipe-search" className="sr-only">
               Напишите, что нужно сделать — мы предложим рецепт
@@ -395,7 +395,7 @@ export default function Page() {
             ))}
           </div>
         </div>
-        <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-8 grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
           {featuredRecipes.map((recipe) => (
             <div key={recipe.id} className="md:col-span-2 xl:col-span-1">
               <RecipeCard recipe={recipe} tab={activeTab} onLaunch={handleLaunchRecipe} variant="featured" />
@@ -415,7 +415,7 @@ export default function Page() {
         </div>
       </Section>
 
-      <Section id="chat" title="Обычный чат" subtitle="Можно говорить голосом или писать текстом.">
+      <Section id="chat" title="Обычный чат" subtitle="Можно говорить голосом или писать текстом." spacing="tight" tone="muted">
         <Card className="space-y-5">
           <div className="flex items-center gap-3 rounded-[20px] border border-neutral-200 bg-white px-4 py-5">
             <button
@@ -457,12 +457,12 @@ export default function Page() {
         <ModelTable />
       </Section>
 
-      <Section id="privacy" title="Приватность" subtitle="Вы решаете, что хранить.">
+      <Section id="privacy" title="Приватность" subtitle="Вы решаете, что хранить." spacing="tight">
         <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-muted">
           <span aria-hidden>🛡️</span>
           Надёжные провайдеры в ЕС • Совместимо с требованиями РФ
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-3 md:gap-4">
           {privacyCards.map((card) => (
             <Card key={card.title} className="flex h-full flex-col justify-between">
               <div>
@@ -486,7 +486,7 @@ export default function Page() {
         title="Тарифы"
         subtitle="Оплата картой, СБП и МИР. Отмена — в один клик."
       >
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-3 md:gap-4">
           {plans.map((plan) => (
             <Card
               key={plan.id}
@@ -535,10 +535,10 @@ export default function Page() {
         )}
       </Section>
 
-      <Section id="testimonials" title="Отзывы" subtitle="До и после — коротко и по делу.">
-        <div className="flex flex-col gap-4">
+      <Section id="testimonials" title="Отзывы" subtitle="До и после — коротко и по делу." spacing="tight" tone="muted">
+        <div className="flex flex-col gap-3">
           <div className="text-sm font-semibold text-muted">★ 4,8 (за 30 дней)</div>
-          <div className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-4" role="region" aria-label="Истории пользователей">
+          <div className="-mx-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-4" role="region" aria-label="Истории пользователей">
             {testimonials.map((testimonial) => (
               <TestimonialCard key={testimonial.id} {...testimonial} />
             ))}
@@ -556,8 +556,8 @@ export default function Page() {
         </div>
       </Section>
 
-      <Section id="faq" title="FAQ" subtitle="Ответы на самые частые вопросы.">
-        <div className="grid gap-4 md:grid-cols-2">
+      <Section id="faq" title="FAQ" subtitle="Ответы на самые частые вопросы." spacing="tight">
+        <div className="grid gap-3 md:grid-cols-2 md:gap-4">
           {faqs.map((faq) => (
             <FAQItem key={faq.id} {...faq} />
           ))}
