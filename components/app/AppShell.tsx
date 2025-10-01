@@ -47,6 +47,7 @@ export default function AppShell({ children, activeRoute, isMiniApp = false }: A
               "relative flex-1",
               isMiniApp
                 ? "px-4 pb-24 pt-4 sm:px-5"
+
                 : "px-4 pb-24 pt-6 sm:px-6 lg:px-6"
             )}
           >

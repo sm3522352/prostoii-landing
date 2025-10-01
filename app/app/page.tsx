@@ -14,7 +14,6 @@ import {
   pinnedRecipes,
   quickActions,
 } from "./home-data";
-
 export default function DashboardPage() {
   const { setPromptDraft } = useAppStore();
   const [activeHint, setActiveHint] = useState(0);
