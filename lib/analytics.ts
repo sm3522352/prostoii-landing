@@ -26,6 +26,8 @@ type AnalyticsEvent =
   | "login_success"
   | "onboarding_step"
   | "recipe_launch"
+  | "chat_open"
+  | "file_upload_open"
   | "chat_send"
   | "file_upload"
   | "plan_upgrade"

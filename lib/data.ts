@@ -7,6 +7,7 @@ export type Recipe = {
   categories: RecipeCategory[];
   icon: string;
   disclaimer?: string;
+  steps?: string[];
 };
 
 export const recipeTabs: { id: RecipeCategory; label: string }[] = [
