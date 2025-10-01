@@ -25,7 +25,6 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
           interactive
 
             ? "cursor-pointer transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--primary)_45%,transparent)] motion-reduce:hover:translate-y-0 motion-reduce:transition-none"
-
             : "",
           "[box-shadow:0_4px_16px_color-mix(in_srgb,var(--text)_10%,transparent)]",
           className

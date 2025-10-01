@@ -33,9 +33,7 @@ export default function TopBar({ onMenuToggle, isMiniApp = false }: TopBarProps)
 
   if (isMiniApp) {
     return (
-
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[color-mix(in_srgb,var(--text)_7%,transparent)] bg-[color-mix(in_srgb,var(--white)_60%,transparent)] px-4 py-3 text-sm font-semibold text-[var(--text)] backdrop-blur-[4px] motion-reduce:backdrop-blur-none">
-
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] text-[var(--primary)]">
             {user?.name?.charAt(0).toUpperCase() ?? "П"}
@@ -54,9 +52,7 @@ export default function TopBar({ onMenuToggle, isMiniApp = false }: TopBarProps)
   }
 
   return (
-
     <header className="sticky top-0 z-30 flex w-full flex-wrap items-center gap-3 border-b border-[color-mix(in_srgb,var(--text)_7%,transparent)] bg-[color-mix(in_srgb,var(--white)_60%,transparent)] px-4 py-4 backdrop-blur-[4px] motion-reduce:backdrop-blur-none sm:px-6 lg:px-6">
-
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <button
           type="button"
