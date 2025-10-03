@@ -4,3 +4,7 @@ node_modules/
 npm-debug.log*
 !.env.local
 .pnp.*
+
+# Patches
+patches/*.diff
+patches/*.patch
