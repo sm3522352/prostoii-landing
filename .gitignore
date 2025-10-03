@@ -8,3 +8,7 @@ npm-debug.log*
 # Patches
 patches/*.diff
 patches/*.patch
+
+# Local patches
+patches/*.diff
+patches/*.patch
