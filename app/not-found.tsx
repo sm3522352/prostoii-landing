@@ -1,15 +1,34 @@
 import Link from "next/link";
 
+import Layout from "@/components/Layout";
+import Section from "@/components/Section";
+
 export default function NotFound() {
   return (
-    <main className="container-soft py-16 text-center">
-      <h1 className="text-3xl font-semibold text-text" style={{ fontFamily: "var(--font-jost)" }}>
-        Страница не найдена
-      </h1>
-      <p className="mt-3 text-muted">Проверьте адрес или вернитесь на главную.</p>
-      <Link href="/" className="mt-6 inline-block underline text-primary">
-        На главную →
-      </Link>
-    </main>
+    <Layout
+      title="Страница не найдена"
+      description="Запрошенная страница отсутствует или была перемещена."
+    >
+      <Section className="pt-24">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-sm font-medium text-white/60">Ошибка 404</p>
+          <h1 className="mt-3 text-4xl font-semibold text-white">
+            Страница не найдена
+          </h1>
+          <p className="mt-4 text-sm text-white/70">
+            Проверьте адрес или вернитесь на главную страницу — там собраны все
+            ключевые разделы.
+          </p>
+          <div className="mt-6 flex justify-center">
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-background shadow-glow transition hover:-translate-y-0.5"
+            >
+              На главную
+            </Link>
+          </div>
+        </div>
+      </Section>
+    </Layout>
   );
 }
