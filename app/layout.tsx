@@ -1,102 +1,113 @@
 import type { Metadata } from "next";
-import "./globals.css";
 import Script from "next/script";
-import Button from "@/components/Button";
-import LavaBackdrop from "@/components/Backdrop/LavaBackdrop";
-import { AppStateProvider } from "@/lib/store";
-import { jost, manrope } from "./fonts";
+import { Inter } from "next/font/google";
+
+import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin", "cyrillic"],
+  display: "swap",
+  variable: "--font-inter",
+});
+
+const baseUrl = "https://prostoii.ru";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://prostoii.ru"),
-  title: "ПростоИИ — понятный ИИ за 60 секунд",
+  metadataBase: new URL(baseUrl),
+  title: "ПростоИИ — тексты и изображения по подписке",
   description:
-    "ПростоИИ помогает получить понятный результат за минуту: рецепты, чат и автоматический подбор моделей с понятными тарифами и приватностью.",
+    "SaaS для генерации текстов и изображений: пробный доступ 1 ₽ на 3 дня, далее 949 ₽/7 дней. Прозрачные лимиты, работа на быстрых и точных LLM-моделях.",
+  alternates: {
+    canonical: baseUrl,
+  },
   openGraph: {
-    title: "ПростоИИ — понятный ИИ за 60 секунд",
+    title: "ПростоИИ — тексты и изображения по подписке",
     description:
-      "Опишите задачу своими словами — мы подберём рецепт, объясним договоры, подготовим письма и сохраним историю.",
-    url: "https://prostoii.ru",
-    siteName: "ПростоИИ",
+      "SaaS для генерации текстов и изображений: пробный доступ 1 ₽ на 3 дня, далее 949 ₽/7 дней. Прозрачные лимиты, работа на быстрых и точных LLM-моделях.",
+    url: baseUrl,
     images: [
       {
-        url: "/og-image.webp",
+        url: "/og.jpg",
         width: 1200,
         height: 630,
-        type: "image/webp"
-      }
-    ]
-  },
-  alternates: {
-    canonical: "https://prostoii.ru"
+        alt: "ПростоИИ",
+      },
+    ],
+    siteName: "ПростоИИ",
+    type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ПростоИИ — понятный ИИ за 60 секунд",
+    title: "ПростоИИ — тексты и изображения по подписке",
     description:
-      "Готовые рецепты, обычный чат и понятные модели. Начните бесплатно — без карты и сложных настроек.",
-    images: ["/og-image.webp"]
-  }
-};
-
-const schema = {
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  name: "ПростоИИ",
-  description:
-    "Понятный ИИ-сервис: рецепты, чат, подбор моделей и прозрачные тарифы. Начните бесплатно, без карты и сложных настроек.",
-  url: "https://prostoii.ru",
-  publisher: {
-    "@type": "Organization",
-    name: "ПростоИИ",
-    url: "https://prostoii.ru",
-    logo: {
-      "@type": "ImageObject",
-      url: "https://prostoii.ru/og-image.webp"
-    }
+      "SaaS для генерации текстов и изображений: пробный доступ 1 ₽ на 3 дня, далее 949 ₽/7 дней. Прозрачные лимиты, работа на быстрых и точных LLM-моделях.",
+    images: ["/og.jpg"],
   },
-  mainEntity: {
-    "@type": "Product",
-    name: "ПростоИИ",
-    description: "ИИ-помощник с готовыми рецептами, чатом и командным доступом.",
-    offers: {
-      "@type": "AggregateOffer",
-      lowPrice: "0",
-      highPrice: "699",
-      priceCurrency: "RUB",
-      offerCount: 3
-    },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.8",
-      reviewCount: "12487"
-    }
-  }
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/manifest.webmanifest",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const ymId = process.env.NEXT_PUBLIC_YM_ID;
+  const ymScript = ymId
+    ? `
+(function(m,e,t,r,i,k,a){
+  m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+  m[i].l=1*new Date();
+  for (let j=0;j<document.scripts.length;j+=1) {
+    if (document.scripts[j].src === r) { return; }
+  }
+  k=e.createElement(t);
+  a=e.getElementsByTagName(t)[0];
+  k.async=1;
+  k.src=r;
+  a.parentNode.insertBefore(k,a);
+})(window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+ym(${ymId}, "init", {
+  clickmap:true,
+  trackLinks:true,
+  accurateTrackBounce:true,
+  webvisor:true
+});
+`
+    : null;
+
   return (
-    <html lang="ru">
-      <body className={`${jost.variable} ${manrope.variable} antialiased`}>
-        <LavaBackdrop />
-        <div className="content-layer">
-          <AppStateProvider>
-            {children}
-            <div className="fixed inset-x-0 bottom-0 z-40 bg-white/95 backdrop-blur-lg shadow-[0_-20px_40px_-32px_rgba(15,18,34,0.45)] md:hidden">
-              <div className="container-soft py-3">
-                <Button as="a" href="#hero" className="w-full" aria-label="Начать бесплатно">
-                  Начать бесплатно
-                </Button>
+    <html lang="ru" className="scroll-smooth">
+      <body
+        className={`${inter.variable} bg-background text-foreground antialiased`}
+      >
+        {children}
+        {ymScript ? (
+          <>
+            <Script
+              id="yandex-metrika"
+              strategy="afterInteractive"
+              defer
+              data-n-head="true"
+            >
+              {ymScript}
+            </Script>
+            <noscript>
+              <div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`https://mc.yandex.ru/watch/${ymId}`}
+                  style={{ position: "absolute", left: "-9999px" }}
+                  alt=""
+                />
               </div>
-            </div>
-            <div id="toast" className="toast" role="status" aria-live="polite" aria-atomic="true" />
-          </AppStateProvider>
-        </div>
-        <Script
-          id="prostoii-ld"
-          type="application/ld+json"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
+            </noscript>
+          </>
+        ) : null}
       </body>
     </html>
   );

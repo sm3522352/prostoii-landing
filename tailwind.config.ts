@@ -1,52 +1,73 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
+  content: [
+    "./app/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./config/**/*.{ts,tsx}",
+  ],
+  safelist: [
+    "bg-gradient-to-br",
+    "from-[#5B4BFF]",
+    "via-[#7C3AED]",
+    "to-[#1EA5F7]",
+  ],
   theme: {
+    container: {
+      center: true,
+      padding: {
+        DEFAULT: "1.5rem",
+        sm: "2rem",
+        lg: "3rem",
+      },
+      screens: {
+        "2xl": "1200px",
+      },
+    },
     extend: {
       colors: {
+        background: "#05070E",
+        foreground: "#F7F8FF",
+        muted: {
+          DEFAULT: "#101425",
+          foreground: "#9298B8",
+        },
         primary: {
-          50: "var(--primary-50)",
-          100: "var(--primary-100)",
-          200: "var(--primary-200)",
-          300: "var(--primary-300)",
-          400: "var(--primary-400)",
-          500: "var(--primary-500)",
-          600: "var(--primary-600)",
-          700: "var(--primary-700)"
+          50: "#F3F4FF",
+          100: "#DFE1FF",
+          200: "#B9BFFF",
+          300: "#939BFF",
+          400: "#6D79FF",
+          500: "#5B4BFF",
+          600: "#4A38E5",
+          700: "#3B2CC0",
         },
-        neutral: {
-          50: "var(--neutral-50)",
-          100: "var(--neutral-100)",
-          200: "var(--neutral-200)",
-          300: "var(--neutral-300)",
-          400: "var(--neutral-400)",
-          500: "var(--neutral-500)",
-          900: "var(--neutral-900)"
+        accent: {
+          500: "#1EA5F7",
         },
-        accent: "var(--accent)",
-        success: "var(--success)",
-        info: "var(--info)",
-        warning: "var(--warning)",
-        danger: "var(--danger)",
-        white: "var(--white)"
+        border: "#1F2438",
+        card: "#0C1120",
+      },
+      fontFamily: {
+        sans: [
+          "var(--font-inter)",
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "sans-serif",
+        ],
       },
       borderRadius: {
-        sm: "var(--radius-sm)",
-        md: "var(--radius-md)",
-        lg: "var(--radius-lg)",
-        pill: "999px"
+        xl: "1rem",
       },
       boxShadow: {
-        glow: "var(--shadow-lg)",
-        soft: "0 32px 72px -36px rgba(27,33,53,0.28)"
+        glow: "0 40px 120px -40px rgba(93, 76, 255, 0.45)",
+        "soft-border": "inset 0 0 0 1px rgba(255, 255, 255, 0.04)",
       },
-      maxWidth: {
-        container: "1200px"
-      }
-    }
+    },
   },
-  plugins: []
+  plugins: [],
 };
 
 export default config;

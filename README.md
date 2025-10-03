@@ -1,50 +1,72 @@
-# ПростоИИ — лендинг (Next.js 14 + TailwindCSS)
+# ПростоИИ — лендинг
 
-Минималистичный лендинг в стиле Lumi.ai: тёплые оранжевые свечения, чистая типографика, скруглённые карточки. Код соответствует спецификации и готов к продакшн‑доработке.
+Next.js 14 + TypeScript + TailwindCSS. Тёмный SaaS-лендинг c секциями Hero → Benefits → How it works → Use cases → Pricing → FAQ → CTA. Подготовлен под деплой на Vercel и подключён к Яндекс.Метрике.
 
 ## Быстрый старт
 
 ```bash
-pnpm i   # или npm i / yarn
-pnpm dev # http://localhost:3000
+npm install
+cp .env.example .env.local # при необходимости поменяйте значения
+npm run dev # http://localhost:3000
 ```
 
-## Техстек
-- Next.js 14 (App Router)
-- TypeScript
-- TailwindCSS
-- next/font (Jost, Manrope)
+## Скрипты
 
-## Структура
-```
-app/
-  globals.css
-  layout.tsx
-  page.tsx
-components/
-  Button.tsx Card.tsx Pill.tsx Section.tsx
-  RecipeCard.tsx TestimonialCard.tsx FAQItem.tsx ModelTable.tsx
-lib/
-  data.ts
-tailwind.config.ts
-next.config.ts
-tsconfig.json
-postcss.config.js
-```
+| Команда             | Назначение                              |
+| ------------------- | --------------------------------------- |
+| `npm run dev`       | локальная разработка                    |
+| `npm run build`     | production-сборка                       |
+| `npm run start`     | запуск собранного приложения            |
+| `npm run lint`      | ESLint (Next.js preset)                 |
+| `npm run typecheck` | TypeScript без генерации файлов         |
+| `npm run format`    | проверка форматирования Prettier        |
+| `npm run test:e2e`  | Playwright: smoke + визуальные снапшоты |
 
-## Дизайн‑токены
-Переменные цветов и радиусов объявлены в `app/globals.css` и подключены в Tailwind через `theme.extend`.
+## Конфигурация
 
-## Доступность и перфоманс
-- Видимые `focus`‑состояния, контраст ≥ WCAG AA
-- Ленивая отрисовка простая; для изображений используйте `next/image` (AVIF/WebP)
+- `.env.local` — публичные ссылки и Яндекс.Метрика. Пример значений в `.env.example`:
+  - `NEXT_PUBLIC_APP_URL`
+  - `NEXT_PUBLIC_BILLING_URL`
+  - `NEXT_PUBLIC_SUPPORT_URL`
+  - `NEXT_PUBLIC_CONTACT_EMAIL`
+  - `NEXT_PUBLIC_YM_ID`
+- `config/pricing.ts` — цены trial и пакеты изображений.
 
-## CTA
-Основной CTA ведёт на `tg://resolve?domain=your_mini_app` (заглушка). Замените на актуальный username.
+После изменения конфигурации перезапустите dev-сервер.
 
-### Sticky CTA и аналитика
-- На мобиле включён фиксированный бар с кнопкой `Начать бесплатно` (`data-analytics="click_cta_sticky"`).
-- Основные кнопки размечены атрибутами `data-analytics`: `click_cta_primary`, `click_cta_secondary`, `click_recipe`, `click_pricing`, `click_show_more`, `faq_toggle`.
+## Метрика
 
-## Лицензия
-MIT
+В `lib/metrics.ts` реализован helper `goal(name)`. На фронтенде размечены цели:
+
+- `click_trial`
+- `click_open_app`
+- `click_buy_pack_10`
+- `click_buy_pack_20`
+- `click_buy_pack_50`
+- `view_pricing`
+- `view_cancel`
+
+Проверьте, что ID счётчика в `.env.local` совпадает с актуальным значением.
+
+## Тестирование и качество
+
+1. `npm run lint`
+2. `npm run typecheck`
+3. `npm run format`
+4. `npm run build`
+5. `npm run test:e2e`
+
+Playwright запускает smoke-тесты для `/`, `/pricing`, `/cancel` и снимает визуальные снапшоты hero и тарифов (desktop + mobile).
+
+## Lighthouse цели
+
+Для превью-деплоя (мобильный Lighthouse, Vercel):
+
+- Performance ≥ 95
+- Accessibility ≥ 95
+- Best Practices = 100
+- SEO = 100
+
+## Деплой
+
+Рекомендуемый хостинг — Vercel. Каждая ветка создаёт preview-окружение, основной деплой — из ветки `main`. В README добавьте ссылку на превью при публикации PR.

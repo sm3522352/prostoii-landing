@@ -1,12 +1,23 @@
 import type { MetadataRoute } from "next";
 
+const baseUrl = "https://prostoii.ru";
+
+const routes = [
+  "/",
+  "/pricing",
+  "/docs/offer",
+  "/docs/privacy",
+  "/cancel",
+  "/contact",
+  "/legal",
+];
+
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = "https://prostoii.ru";
-  const paths = ["/", "/privacy", "/data-storage", "/settings/privacy"];
-  return paths.map((path) => ({
-    url: `${base}${path}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly",
-    priority: path === "/" ? 1 : 0.6
+  const updatedAt = new Date();
+  return routes.map((path) => ({
+    url: `${baseUrl}${path}`,
+    lastModified: updatedAt,
+    changeFrequency: path === "/" ? "weekly" : "monthly",
+    priority: path === "/" ? 1 : 0.7,
   }));
 }
