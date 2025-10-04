@@ -1,102 +1,120 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import Script from "next/script";
-import Button from "@/components/Button";
-import LavaBackdrop from "@/components/Backdrop/LavaBackdrop";
-import { AppStateProvider } from "@/lib/store";
-import { jost, manrope } from "./fonts";
+import './globals.css';
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import Link from 'next/link';
+import { ReactNode } from 'react';
+
+const inter = Inter({ subsets: ['latin', 'cyrillic'], display: 'swap' });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://prostoii.ru"),
-  title: "ПростоИИ — понятный ИИ за 60 секунд",
+  title: 'ПростоИИ — тексты и изображения по подписке',
   description:
-    "ПростоИИ помогает получить понятный результат за минуту: рецепты, чат и автоматический подбор моделей с понятными тарифами и приватностью.",
+    'SaaS для генерации текстов и изображений: пробный доступ 1 ₽ на 3 дня, далее 949 ₽/7 дней. Прозрачные лимиты, работа на быстрых и точных LLM‑моделях.',
   openGraph: {
-    title: "ПростоИИ — понятный ИИ за 60 секунд",
+    title: 'ПростоИИ — тексты и изображения по подписке',
     description:
-      "Опишите задачу своими словами — мы подберём рецепт, объясним договоры, подготовим письма и сохраним историю.",
-    url: "https://prostoii.ru",
-    siteName: "ПростоИИ",
+      'SaaS для генерации текстов и изображений: пробный доступ 1 ₽ на 3 дня, далее 949 ₽/7 дней. Прозрачные лимиты, работа на быстрых и точных LLM‑моделях.',
+    url: process.env.NEXT_PUBLIC_APP_URL || 'https://prostoii.ru',
     images: [
       {
-        url: "/og-image.webp",
+        url: '/og-image.png',
         width: 1200,
         height: 630,
-        type: "image/webp"
+        alt: 'ПростоИИ — тексты и изображения по подписке'
       }
-    ]
-  },
-  alternates: {
-    canonical: "https://prostoii.ru"
+    ],
+    type: 'website'
   },
   twitter: {
-    card: "summary_large_image",
-    title: "ПростоИИ — понятный ИИ за 60 секунд",
+    card: 'summary_large_image',
+    title: 'ПростоИИ — тексты и изображения по подписке',
     description:
-      "Готовые рецепты, обычный чат и понятные модели. Начните бесплатно — без карты и сложных настроек.",
-    images: ["/og-image.webp"]
+      'SaaS для генерации текстов и изображений: пробный доступ 1 ₽ на 3 дня, далее 949 ₽/7 дней.',
+    images: ['/og-image.png']
   }
 };
 
-const schema = {
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  name: "ПростоИИ",
-  description:
-    "Понятный ИИ-сервис: рецепты, чат, подбор моделей и прозрачные тарифы. Начните бесплатно, без карты и сложных настроек.",
-  url: "https://prostoii.ru",
-  publisher: {
-    "@type": "Organization",
-    name: "ПростоИИ",
-    url: "https://prostoii.ru",
-    logo: {
-      "@type": "ImageObject",
-      url: "https://prostoii.ru/og-image.webp"
-    }
-  },
-  mainEntity: {
-    "@type": "Product",
-    name: "ПростоИИ",
-    description: "ИИ-помощник с готовыми рецептами, чатом и командным доступом.",
-    offers: {
-      "@type": "AggregateOffer",
-      lowPrice: "0",
-      highPrice: "699",
-      priceCurrency: "RUB",
-      offerCount: 3
-    },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.8",
-      reviewCount: "12487"
-    }
-  }
-};
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="ru">
-      <body className={`${jost.variable} ${manrope.variable} antialiased`}>
-        <LavaBackdrop />
-        <div className="content-layer">
-          <AppStateProvider>
-            {children}
-            <div className="fixed inset-x-0 bottom-0 z-40 bg-white/95 backdrop-blur-lg shadow-[0_-20px_40px_-32px_rgba(15,18,34,0.45)] md:hidden">
-              <div className="container-soft py-3">
-                <Button as="a" href="#hero" className="w-full" aria-label="Начать бесплатно">
-                  Начать бесплатно
-                </Button>
-              </div>
+    <html lang="ru" className="dark">
+      <head>
+        {/* Yandex.Metrica counter */}
+        {process.env.NEXT_PUBLIC_YM_ID && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+                m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0];k.async=1;k.src=r;a.parentNode.insertBefore(k,a)})
+                (window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js', 'ym');
+                ym(${process.env.NEXT_PUBLIC_YM_ID}, 'init', {
+                  clickmap:true,
+                  trackLinks:true,
+                  accurateTrackBounce:true,
+                  webvisor:true
+                });
+              `
+            }}
+          />
+        )}
+      </head>
+      <body className={`${inter.className} bg-bg text-text-primary`}> 
+        <header className="border-b border-border">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <Link href="/" className="text-xl font-semibold">
+              ПростоИИ
+            </Link>
+            <nav className="space-x-4 hidden sm:block">
+              <Link href="/pricing" className="hover:text-accent">
+                Тарифы
+              </Link>
+              <Link href="/docs/offer" className="hover:text-accent">
+                Оферта
+              </Link>
+              <Link href="/docs/privacy" className="hover:text-accent">
+                Конфиденциальность
+              </Link>
+              <Link href="/cancel" className="hover:text-accent">
+                Отмена
+              </Link>
+              <Link href="/contact" className="hover:text-accent">
+                Контакты
+              </Link>
+            </nav>
+          </div>
+        </header>
+        <main>{children}</main>
+        <footer className="border-t border-border py-8 mt-16">
+          <div className="max-w-7xl mx-auto px-4 text-text-secondary text-sm space-y-2">
+            <nav className="flex flex-wrap gap-x-4 gap-y-2">
+              <Link href="/pricing" className="hover:text-accent">
+                Тарифы
+              </Link>
+              <Link href="/docs/offer" className="hover:text-accent">
+                Оферта
+              </Link>
+              <Link href="/docs/privacy" className="hover:text-accent">
+                Конфиденциальность
+              </Link>
+              <Link href="/cancel" className="hover:text-accent">
+                Отмена
+              </Link>
+              <Link href="/contact" className="hover:text-accent">
+                Контакты
+              </Link>
+              <Link href="/legal" className="hover:text-accent">
+                Юридические
+              </Link>
+            </nav>
+            <div>
+              <span>
+                © {new Date().getFullYear()} ПростоИИ. Все права защищены.
+              </span>
             </div>
-            <div id="toast" className="toast" role="status" aria-live="polite" aria-atomic="true" />
-          </AppStateProvider>
-        </div>
-        <Script
-          id="prostoii-ld"
-          type="application/ld+json"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
+            <div>
+              <a href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL}`}>{process.env.NEXT_PUBLIC_CONTACT_EMAIL}</a>
+            </div>
+          </div>
+        </footer>
       </body>
     </html>
   );
