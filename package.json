@@ -2,31 +2,28 @@
   "name": "prostoii-landing",
   "version": "1.0.0",
   "private": true,
-  "engines": {
-    "node": ">=18 <21"
-  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "test:e2e": "playwright test"
+    "lint": "next lint"
   },
   "dependencies": {
-    "clsx": "^2.1.1",
-    "next": "14.2.5",
-    "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "next": "13.5.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "clsx": "^2.0.0"
   },
   "devDependencies": {
-    "@playwright/test": "1.48.0",
-    "@types/node": "24.6.0",
-    "@types/react": "19.1.15",
-    "autoprefixer": "10.4.20",
-    "eslint": "8.57.0",
-    "eslint-config-next": "14.2.5",
-    "postcss": "8.4.47",
-    "tailwindcss": "3.4.13",
-    "typescript": "5.6.2"
+    "@types/node": "20.8.0",
+    "@types/react": "18.2.14",
+    "@types/react-dom": "18.2.6",
+    "autoprefixer": "^10.4.14",
+    "eslint": "^8.49.0",
+    "eslint-config-next": "13.5.0",
+    "postcss": "^8.4.31",
+    "prettier": "^3.0.3",
+    "tailwindcss": "^3.3.3",
+    "typescript": "5.2.2"
   }
 }

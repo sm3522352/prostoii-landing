@@ -1,27 +1,36 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices } from '@playwright/test';
 
+/**
+ * Playwright configuration for smoke testing the landing and static pages.
+ * Tests visit a selection of routes and verify the presence of
+ * important elements and data attributes. Running these tests in CI
+ * helps ensure that pages render without JavaScript errors and that
+ * primary CTA buttons remain in the DOM. For more comprehensive
+ * coverage, additional tests can be added later.
+ */
 export default defineConfig({
-  testDir: "tests/e2e",
-  timeout: 30_000,
-  expect: { timeout: 5_000 },
+  testDir: './tests',
+  timeout: 30 * 1000,
+  expect: {
+    timeout: 5000
+  },
+  reporter: [['list'], ['html']],
+  webServer: {
+    command: 'pnpm start',
+    port: 3000
+  },
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
-    trace: "on-first-retry",
+    baseURL: 'http://localhost:3000',
+    trace: 'on-first-retry'
   },
   projects: [
     {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 720 } },
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] }
     },
     {
-      name: "mobile",
-      use: { ...devices["Pixel 5"], viewport: { width: 375, height: 812 } },
-    },
-  ],
-  webServer: {
-    command: "npm run dev -- --hostname 0.0.0.0 --port 3000",
-    url: "http://localhost:3000",
-    timeout: 60_000,
-    reuseExistingServer: !process.env.CI,
-  },
+      name: 'mobile',
+      use: { ...devices['iPhone 12'] }
+    }
+  ]
 });

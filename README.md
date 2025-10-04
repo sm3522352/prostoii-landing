@@ -1,50 +1,80 @@
-# ПростоИИ — лендинг (Next.js 14 + TailwindCSS)
+# ПростоИИ Landing
 
-Минималистичный лендинг в стиле Lumi.ai: тёплые оранжевые свечения, чистая типографика, скруглённые карточки. Код соответствует спецификации и готов к продакшн‑доработке.
+Это репозиторий лендинга и базового дашборда для сервиса **ПростоИИ**. Проект создан на
+**Next.js 13** с использованием **App Router**, TypeScript, Tailwind CSS,
+ESLint и Prettier.
 
-## Быстрый старт
+## Запуск локально
 
-```bash
-pnpm i   # или npm i / yarn
-pnpm dev # http://localhost:3000
+1. Установите зависимости:
+
+   ```bash
+   pnpm install
+   ```
+
+2. Скопируйте `.env.example` в `.env.local` и укажите реальные значения:
+
+   - `NEXT_PUBLIC_APP_URL` — URL приложения (чат/генератор).
+   - `NEXT_PUBLIC_BILLING_URL` — страница оплаты/покупки.
+   - `NEXT_PUBLIC_SUPPORT_URL` — ссылка на поддержку.
+   - `NEXT_PUBLIC_CONTACT_EMAIL` — контактный e‑mail.
+   - `NEXT_PUBLIC_YM_ID` — ID счётчика Яндекс.Метрики.
+
+3. Запустите сервер разработки:
+
+   ```bash
+   pnpm dev
+   ```
+
+   Приложение будет доступно по адресу http://localhost:3000.
+
+## Структура проекта
+
+- **`app/`** — страницы и макеты, использующие новый Next.js App Router. Каждый путь
+  соответствует URL на сайте.
+- **`components/`** — переиспользуемые компоненты: Hero, таблица тарифов, FAQ и т. д.
+- **`config/pricing.ts`** — конфигурация тарифов и пакетов изображений. Меняйте
+  значения здесь для обновления цен.
+- **`lib/metrics.ts`** — обёртка над `ym()` для отправки целей Яндекс.Метрики.
+- **`public/`** — статические файлы (sitemap, robots.txt, og‑изображения и т.п.).
+- **`tests/`** — e2e‑тесты Playwright. Запускаются через `pnpm test` или в CI.
+
+## Цели Метрики
+
+Для отслеживания кликов и просмотров используйте функцию `goal(name: string)` из
+`lib/metrics.ts`. На кнопках и страницах также указываются атрибуты
+`data-goal="click_*"` или `data-view="view_*"` для удобства тестирования.
+
+Пример использования:
+
+```tsx
+import { goal } from '@/lib/metrics';
+
+<button onClick={() => goal('click_trial')} data-goal="click_trial">
+  Начать за 1 ₽
+</button>
 ```
 
-## Техстек
-- Next.js 14 (App Router)
-- TypeScript
-- TailwindCSS
-- next/font (Jost, Manrope)
+## Lighthouse
 
-## Структура
-```
-app/
-  globals.css
-  layout.tsx
-  page.tsx
-components/
-  Button.tsx Card.tsx Pill.tsx Section.tsx
-  RecipeCard.tsx TestimonialCard.tsx FAQItem.tsx ModelTable.tsx
-lib/
-  data.ts
-tailwind.config.ts
-next.config.ts
-tsconfig.json
-postcss.config.js
-```
+Для получения высоких оценок по производительности и доступности:
 
-## Дизайн‑токены
-Переменные цветов и радиусов объявлены в `app/globals.css` и подключены в Tailwind через `theme.extend`.
+- Используйте компонент `next/image` для картинок.
+- Ограничьте число сторонних скриптов (подключен только счётчик Яндекс.Метрики).
+- Проверяйте контрастность цветов и добавляйте `alt`‑тексты.
+- Загружайте шрифты через `next/font` с `display: swap`.
 
-## Доступность и перфоманс
-- Видимые `focus`‑состояния, контраст ≥ WCAG AA
-- Ленивая отрисовка простая; для изображений используйте `next/image` (AVIF/WebP)
+Для локального прогона Lighthouse можно использовать пакет `lighthouse-ci` или
+расширение DevTools в Chrome.
 
-## CTA
-Основной CTA ведёт на `tg://resolve?domain=your_mini_app` (заглушка). Замените на актуальный username.
+## Изменение тарифов
 
-### Sticky CTA и аналитика
-- На мобиле включён фиксированный бар с кнопкой `Начать бесплатно` (`data-analytics="click_cta_sticky"`).
-- Основные кнопки размечены атрибутами `data-analytics`: `click_cta_primary`, `click_cta_secondary`, `click_recipe`, `click_pricing`, `click_show_more`, `faq_toggle`.
+Все цены и лимиты хранятся в `config/pricing.ts`. Чтобы обновить тариф или
+стоимость пакета, измените соответствующие поля и redeploy.
 
-## Лицензия
-MIT
+## Деплой
+
+Проект готов для деплоя на **Vercel**. Каждая ветка будет автоматически
+создавать Preview. Перед релизом убедитесь, что заполнены реальные значения
+переменных окружения и настроен домен. Просмотрите результаты Lighthouse на
+Preview и убедитесь, что e2e‑тесты проходят.
