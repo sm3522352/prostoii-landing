@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import Card from "@/components/Card";
 import { showToast } from "@/lib/toast";
 import { useAppStore } from "@/lib/store";
@@ -15,6 +16,7 @@ import {
 } from "@/app/app/home-data";
 
 export default function MiniDashboardPage() {
+  const router = useRouter();
   const { setPromptDraft } = useAppStore();
   const [activeHint, setActiveHint] = useState(0);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -56,6 +58,7 @@ export default function MiniDashboardPage() {
   const handleHintClick = (text: string) => {
     setPromptDraft(text);
     showToast(`Подсказка добавлена: ${text}`);
+    router.push("/app/chat");
   };
 
   return (

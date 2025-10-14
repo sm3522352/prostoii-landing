@@ -1,10 +1,11 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import Card from "@/components/Card";
 import { showToast } from "@/lib/toast";
 import { trackEvent } from "@/lib/analytics";
+import { useAppStore } from "@/lib/store";
 
 type Message = {
   id: string;
@@ -48,6 +49,10 @@ export default function ChatPage() {
   const [inputValue, setInputValue] = useState("Нужно перенести дедлайн на пятницу, сохранив доверие.");
   const [isSending, setIsSending] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const {
+    ui: { promptDraft },
+    setPromptDraft,
+  } = useAppStore();
 
   const lastMessages = useMemo(() => messages.slice(-6), [messages]);
 
@@ -88,16 +93,29 @@ export default function ChatPage() {
     showToast(`Добавили подсказку: ${chip}`);
   };
 
-  const resizeInput = () => {
+  const resizeInput = useCallback(() => {
     if (!inputRef.current) return;
     inputRef.current.style.height = "auto";
     const newHeight = Math.min(inputRef.current.scrollHeight, 6 * 24);
     inputRef.current.style.height = `${newHeight}px`;
-  };
+  }, []);
 
   useEffect(() => {
     resizeInput();
-  }, []);
+  }, [resizeInput]);
+
+  useEffect(() => {
+    if (!promptDraft) {
+      return;
+    }
+
+    setInputValue(promptDraft);
+    window.requestAnimationFrame(resizeInput);
+    window.setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
+    setPromptDraft("");
+  }, [promptDraft, resizeInput, setPromptDraft]);
 
   return (
     <div className="flex flex-col gap-6">
