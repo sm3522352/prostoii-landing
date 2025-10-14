@@ -1,6 +1,7 @@
 "use client";
 
-import { ChangeEvent, useMemo } from "react";
+import { ChangeEvent, FormEvent, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/store";
 
 type TopBarProps = {
@@ -16,6 +17,11 @@ export default function TopBar({ onMenuToggle, isMiniApp = false }: TopBarProps)
     ui: { promptDraft },
     setPromptDraft,
   } = useAppStore();
+  const router = useRouter();
+
+  const navigateToChat = useCallback(() => {
+    router.push("/app/chat");
+  }, [router]);
 
   const greeting = useMemo(() => {
     if (!user) return "ПростоИИ";
@@ -29,6 +35,15 @@ export default function TopBar({ onMenuToggle, isMiniApp = false }: TopBarProps)
 
   const handleQuickAction = (action: string) => {
     setPromptDraft(action);
+    navigateToChat();
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!promptDraft.trim()) {
+      return;
+    }
+    navigateToChat();
   };
 
   if (isMiniApp) {
@@ -63,19 +78,21 @@ export default function TopBar({ onMenuToggle, isMiniApp = false }: TopBarProps)
           <span aria-hidden className="text-base">☰</span>
         </button>
         <div className="min-w-0 flex-1">
-          <label className="relative flex items-center">
-            <span aria-hidden className="pointer-events-none absolute left-4 text-[color-mix(in_srgb,var(--text)_50%,transparent)]">
-              🔍
-            </span>
-            <input
-              value={promptDraft}
-              onChange={handleChange}
-              type="search"
-              placeholder="Спросите или найдите"
-              aria-label="Спросите, что нужно сделать"
-              className="w-full rounded-2xl border border-[var(--muted-border)] bg-[var(--surface)] py-3 pl-11 pr-4 text-sm text-[var(--text)] placeholder:text-[color-mix(in_srgb,var(--text)_55%,transparent)] focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--primary)_45%,transparent)]"
-            />
-          </label>
+          <form onSubmit={handleSubmit}>
+            <label className="relative flex items-center">
+              <span aria-hidden className="pointer-events-none absolute left-4 text-[color-mix(in_srgb,var(--text)_50%,transparent)]">
+                🔍
+              </span>
+              <input
+                value={promptDraft}
+                onChange={handleChange}
+                type="search"
+                placeholder="Спросите или найдите"
+                aria-label="Спросите, что нужно сделать"
+                className="w-full rounded-2xl border border-[var(--muted-border)] bg-[var(--surface)] py-3 pl-11 pr-4 text-sm text-[var(--text)] placeholder:text-[color-mix(in_srgb,var(--text)_55%,transparent)] focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--primary)_45%,transparent)]"
+              />
+            </label>
+          </form>
           <p className="mt-1 hidden text-xs text-[color-mix(in_srgb,var(--text)_60%,transparent)] sm:block">{greeting}</p>
         </div>
       </div>

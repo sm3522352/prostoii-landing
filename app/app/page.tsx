@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Card from "@/components/Card";
 import { showToast } from "@/lib/toast";
 import { trackEvent } from "@/lib/analytics";
@@ -15,6 +16,7 @@ import {
   quickActions,
 } from "./home-data";
 export default function DashboardPage() {
+  const router = useRouter();
   const { setPromptDraft } = useAppStore();
   const [activeHint, setActiveHint] = useState(0);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -68,6 +70,7 @@ export default function DashboardPage() {
   const handleHintClick = (text: string) => {
     setPromptDraft(text);
     showToast(`Подсказка добавлена: ${text}`);
+    router.push("/app/chat");
   };
 
   return (
